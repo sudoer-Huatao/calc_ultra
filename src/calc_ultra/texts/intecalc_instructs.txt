@@ -1,0 +1,22 @@
+
+
+   ------------------------------------------------------------
+  --+--  |\    |  ---+---  +----  +----      ^      |      +----
+    |    | \   |     |     |      |         / \     |      |
+    |    |  \  |     |     +---   |        / - \    |      |
+    |    |   \ |     |     |      |       /     \   |      |
+  --+--  |    \|     |     +----  +----  /       \  +----  +----
+   ------------------------------------------------------------
+
+                      The Integral Calculator
+
+
+Commands:
+ 
+--> 1: Calculate antiderivative
+--> 2: Calculate definite integral
+--> 3: Calculate improper integral
+--> 4: Exit InteCalc
+
+(Absolute value function and factorial function is only supported by definite integral computation)
+ 

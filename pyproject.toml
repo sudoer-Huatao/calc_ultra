@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "calc_ultra"
+version = "1.0.0"
+dependencies = [
+  "sympy >= 1.12",
+  "numpy >= 1.26.2",
+  "matplotlib >= 3.8.2"
+]
+requires-python = ">=3.8"
+authors = [
+  { name="Huatao", email="huatao.xue@outlook.com" },
+]
+maintainers = [
+  { name="Huatao", email="huatao.xue@outlook.com "}
+]
+description = "A calculus calculator with a menu-based interface."
+readme = "README.md"
+license = {text = "MIT License"}
+keywords = ["calculus", "calculator"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+]
+
+[project.urls]
+Homepage = "https://github.com/sudoer-Huatao/calc_ultra"
+Issues = "https://github.com/sudoer-Huatao/calc_ultra/issues"

@@ -1,0 +1,10 @@
+
+
+   ---------------------
+  | Calc-ULTRA Settings |
+   ---------------------
+
+--> 'print': set printing mode.
+--> 'graph': set graph display.
+--> 'date' : set date display.
+--> 'exit' : exit settings.

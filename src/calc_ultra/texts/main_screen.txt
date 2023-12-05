@@ -1,0 +1,31 @@
+
+
+   -------------------------------------------------------------------------
+  +----      ^      |       +----      |   |  |    --+--  +---+      ^      |
+  |         / \     |       |          |   |  |      |    |   |     / \     |
+  |        / - \    |       |      --  |   |  |      |    |---+    / - \    |
+  |       /     \   |       |          |   |  |      |    |  \    /     \ 
+  +----  /       \  +-----  +----      +---+  +----  |    |   \  /       \  0
+   -------------------------------------------------------------------------
+
+           --------------------------------------------------------
+          | The ULTIMATE Derivative - Integral - Limit Calculator! |
+           --------------------------------------------------------
+
+Calc-ULTRA supports:
+ - Special numbers including Pi and e;
+ - Trigonometric functions;
+ - Exponents (for base e, input as "exp(x)");
+ - The Natural Logarithm (input as "log(x)");
+ - Inverse Trigonometric Functions (input as 'a' followed by a trigonometric function, e.g. asin(x) = arcsin(x));
+ - Hyperbolic Functions and Inverse Hyperbolic Functions (same input format as inverse trigonometric functions);
+ - Other Functions such as the Factorial factorial(x), the Error Function erf(x) and more!
+
+Commands:
+
+--> 1: Open DerivaCalc
+--> 2: Open InteCalc
+--> 3: Open LimCalc
+--> 4: Open calculator settings
+--> 5: Quit Calc-ULTRA
+

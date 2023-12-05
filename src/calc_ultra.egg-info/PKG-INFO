@@ -1,0 +1,66 @@
+Metadata-Version: 2.1
+Name: calc-ultra
+Version: 1.0.0
+Summary: A calculus calculator with a menu-based interface.
+Author-email: Huatao <huatao.xue@outlook.com>
+Maintainer-email: Huatao <huatao.xue@outlook.com>
+License: MIT License
+Project-URL: Homepage, https://github.com/sudoer-Huatao/calc_ultra
+Project-URL: Issues, https://github.com/sudoer-Huatao/calc_ultra/issues
+Keywords: calculus,calculator
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: sympy>=1.12
+Requires-Dist: numpy>=1.26.2
+Requires-Dist: matplotlib>=3.8.2
+
+### (Note: This repo is the calc_ultra module. For the Python script, visit https://github.com/sudoer-Huatao/Calc-ULTRA)
+
+# Calc-ULTRA: Calculus Calculator
+
+[![GPLv3 License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.0.0-blue.svg)](https://github.com/sudoer-Huatao/Calc-ULTRA_Calculus-Calculator)
+
+Calc-ULTRA, but a module!
+
+- No Python background knowledge needed.
+- Supports derivatives, antiderivatives, and definite integrals - with a graph!
+- (Please FULL SCREEN your console/terminal for better experience!)
+<img width="1710" alt="截屏2023-11-28 15 08 37" src="https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/bf1e55dd-cb70-46cf-bdc9-0bf58a7886c6">
+
+## How to run
+
+To run it, simply use pip to install it using PIP.
+
+Then, import main from the calc_ultra module. That should run the calculator. Demo:
+
+https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/0af2037b-87fc-400f-9ce4-775c7e0dcb8a
+
+## Requirements
+
+This program requires `sympy`,  `numpy`, `matplotlib`, `datetime`, `math`, `logging`, `warnings` and `os` modules. `datetime`, `math`, `logging`, `warnings` and `os` are built-in to most Python editors. The rest can be installed with the command `pip install MODULE_NAME`, though the required modules should be automatically downloaded.
+
+<img width="1710" alt="截屏2023-11-28 15 11 12" src="https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/20e1b072-d2dd-4610-9378-95fd74b80a84">
+
+# Warnings!!!
+
+## Function limitations:
+
+Due to limitations of the SymPy module, SOME FUNCTIONS CAN NOT BE INTEGRATED. The Error Function erf(x) can be integrated in both indefinite integral and definite integral calculation, but the Absolute Value and Factorial functions are only available to definite integral calculations. Also, the factorial function cannot be graphed properly. Integration of composed functions are also limited due to SymPy limitations. While some composed functions work, others don't. 😟
+
+## Test PYPI
+
+The test version of this project is on Test PYPI. View on https://test.pypi.org/project/calc-ultra/.
+
+# Acknowledgements
+
+A general thank-you to all GitHub users who gave feedback and/or starred this repository. ⭐️
+And... a SPECIAL THANK-YOU to @Haobot for troubleshooting and feedback! 👍❤️
+
+This program was made using SymPy and SciPy for calculation and Matplotlib and NumPy for graphing.
+
+# License
+
+This project is licensed under the terms of the MIT license.
