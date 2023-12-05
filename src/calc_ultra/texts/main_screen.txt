@@ -13,6 +13,7 @@
            --------------------------------------------------------
 
 Calc-ULTRA supports:
+
  - Special numbers including Pi and e;
  - Trigonometric functions;
  - Exponents (for base e, input as "exp(x)");
