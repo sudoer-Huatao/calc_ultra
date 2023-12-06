@@ -8,7 +8,7 @@ Calc-ULTRA, but a module!
 - Supports derivatives, antiderivatives, and definite integrals - with a graph!
 
 ### Note:
-This is the module package of the Calc-ULTRA calculator. For the Python script of this package, visit https://github.com/sudoer-Huatao/Calc-ULTRA)
+This is the module package of the Calc-ULTRA calculator. For the Python script of this package, visit https://github.com/sudoer-Huatao/Calc-ULTRA
 
 ## Installation and Running
 
