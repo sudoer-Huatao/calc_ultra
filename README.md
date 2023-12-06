@@ -1,6 +1,6 @@
 # Calc-ULTRA: Calculus Calculator
 
-[![GPLv3 License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.0.1-blue.svg)](https://github.com/sudoer-Huatao/Calc-ULTRA_Calculus-Calculator)
+[![GPLv3 License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.0.2-blue.svg)](https://github.com/sudoer-Huatao/Calc-ULTRA_Calculus-Calculator)
 
 Calc-ULTRA, but a module!
 
@@ -15,9 +15,11 @@ This is the module package of the Calc-ULTRA calculator. For the Python script o
 Command line: `pip install calc-ultra`.
 To run the calculator, type `from calc_ultra import main`. That should run the calculator.
 
-Demo:
+Make sure you have the latest version installed. For example, if the latest version is 1.0.2, type `pip install calc-ultra==1.0.2` to reinstall the module.
 
-https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/6600b4a0-29eb-480c-ab67-d9ac5b2d0f37
+Demo (v1.0.1):
+
+https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/17170f6e-4d7a-42ef-8d1d-121cde82f26a
 
 
 ## Requirements
