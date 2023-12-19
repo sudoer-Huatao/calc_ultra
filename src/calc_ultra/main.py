@@ -1,5 +1,4 @@
 from sympy.core.numbers import pi, E, oo
-from sympy.abc import x, y, z
 from math import floor, ceil, erf, fabs, factorial
 from numpy import *
 from sympy import (
@@ -10,6 +9,7 @@ from sympy import (
     limit,
     pprint,
     simplify,
+    symbols,
 )
 import matplotlib.pyplot as plt
 import datetime, logging, os, time, warnings
@@ -93,6 +93,7 @@ def antiderive(function):
 
 
 def definite_integrate(function, low, up):
+    x = symbols("x")
     if "^" in function:
         replaced = function.replace("^", "**")
 
@@ -397,6 +398,9 @@ def settings():
 
 
 def main():
+    global x, y, z
+    x, y, z = symbols("x, y, z")
+
     while True:
         instruct_path = (
             os.path.dirname(os.path.abspath(__file__)) + "/texts/main_screen.txt"
