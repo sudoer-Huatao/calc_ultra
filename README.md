@@ -1,6 +1,6 @@
 # calc-ultra
 
-[![GPLv3 License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.1.1-blue.svg)](https://github.com/sudoer-Huatao/Calc-ULTRA_Calculus-Calculator)
+[![GPLv3 License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.1.2-blue.svg)](https://github.com/sudoer-Huatao/Calc-ULTRA_Calculus-Calculator)
 
 > **Calculus made easy**
 
@@ -22,13 +22,13 @@ To run the calculator, import Calc-ULTRA as `calc_ultra` like so: `from calc_ult
 
 Make sure you have the latest version installed. For example, if the latest version is 1.0.2, type `pip install calc-ultra==1.0.2` to reinstall the module.
 
-Demo (v1.0.1):
+Demo (version used: v1.0.1):
 
 <https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/17170f6e-4d7a-42ef-8d1d-121cde82f26a>
 
 ## Requirements
 
-This program requires `sympy`,  `numpy`, `matplotlib`, `datetime`, `math`, `logging`, `warnings` and `os` modules. `datetime`, `math`, `logging`, `warnings` and `os` are built-in to most Python editors.
+This program requires the `sympy`,  `numpy`, and `matplotlib` modules installed. Other required modules are built in to most Python IDEs.
 
 ## Warnings
 
