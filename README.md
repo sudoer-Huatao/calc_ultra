@@ -1,13 +1,23 @@
 # calc-ultra
 
-[![GPLv3 License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.1.2-blue.svg)](https://github.com/sudoer-Huatao/Calc-ULTRA_Calculus-Calculator)
+[![GPLv3 License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.2.1-blue.svg)](https://github.com/sudoer-Huatao/Calc-ULTRA_Calculus-Calculator)
 
 > **Calculus made easy**
 
 The Calc-ULTRA calculus calculator, but as a module!
 
-- Little Python background knowledge needed.
-- Supports derivatives, antiderivatives, and definite integrals - with a graph!
+- Little Python background knowledge needed!
+
+Supports:
+
+- Derivatives
+- Partials
+- Implicit differentiation
+- Antiderivatives
+- Definite integrals
+- Improper integrals
+
+**NEW SINCE V1.2.1:** Graphs for differentiation and integrals are supported!
 
 ## Note
 
@@ -18,7 +28,9 @@ This is the module package of the Calc-ULTRA calculator. For the Python script o
 > Run the calculus calculator with a single line of code
 
 Command line: `pip install calc-ultra`.
-To run the calculator, import Calc-ULTRA as `calc_ultra` like so: `from calc_ultra import main`.
+To run the calculator, import Calc-ULTRA as `calc_ultra` like so:
+
+`from calc_ultra import main`
 
 Make sure you have the latest version installed. For example, if the latest version is 1.0.2, type `pip install calc-ultra==1.0.2` to reinstall the module.
 
