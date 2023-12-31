@@ -23,10 +23,9 @@ warnings.filterwarnings("ignore")
 
 
 def derive(function, order):
-    if "^" in function:
-        function = function.replace("^", "**")
-
+    replace_expr(function)
     if check_order(order) is True:
+        global df
         df = diff(function, x, order)
 
         nprint(f"\nDerivative of {function} with order {order} is:\n")
@@ -36,10 +35,35 @@ def derive(function, order):
             nprint("\nSimplify/rewrite:\n")
             print_expr(simplify(df, evaluate=False))
 
+        df = str(df)
+
+        nprint("\nShow graph of area? (y/n)")
+        show = input("(Exit the graph window when you are finished to continue) ")
+
+        if show == "y":
+            try:
+                nprint("\nLoading graph. Might take some time on first startup ...")
+                x_array = linspace(-8, 8, 200000)
+
+                title = "Function (red) and derivative (blue)"
+                plt.title(title)
+                plt.xlabel("x", weight="bold")
+                plt.ylabel("y", rotation=0, weight="bold")
+                plt.plot(x_array, f(x_array), color="red")
+                plt.plot(x_array, difunc(x_array), color="blue")
+                plt.axis([-7.5, 7.5, -7.5, 7.5])
+                plt.grid()
+                plt.show()
+
+                return "\nExited graph."
+
+            except:
+                logging.warning("Could not graph function.")
+                return "\nExited graph."
+
 
 def partial_derive(function, var, order):
-    if "^" in function:
-        function = function.replace("^", "**")
+    replace_expr(function)
 
     if check_order(order) is True:
         df = diff(function, var, order)
@@ -73,9 +97,9 @@ def antiderive(function):
     if "pi" in function:
         function = function.replace("pi", str(pi))
 
-    if "^" in function:
-        function = function.replace("^", "**")
+    replace_expr(function)
 
+    global F
     F = Integral(function, x).doit()
 
     if "Integral" in str(F):
@@ -89,13 +113,40 @@ def antiderive(function):
             nprint("\nSimplify/rewrite:\n")
             print_expr(simplify(F, evaluate=False))
 
+        F = str(F)
+
         nprint("\nDon't forget to add a constant!\n")
+
+        nprint("\nShow graph of area? (y/n)")
+        show = input("(Exit the graph window when you are finished to continue) ")
+
+        if show == "y":
+            # try:
+            nprint("\nLoading graph. Might take some time on first startup ...")
+
+            x_array = linspace(-8, 8, 200000)
+
+            title = "Function (red) and antiderivative (blue, C = 0)"
+            plt.title(title)
+            plt.xlabel("x", weight="bold")
+            plt.ylabel("y", rotation=0, weight="bold")
+            plt.plot(x_array, f(x_array), color="red")
+            plt.plot(x_array, af(x_array), color="blue")
+            plt.axis([-7.5, 7.5, -7.5, 7.5])
+
+            plt.grid()
+            plt.show()
+
+            return "\nExited graph."
+
+        # except:
+        # logging.warning("Could not graph function.")
+        # return "\nExited graph."
 
 
 def definite_integrate(function, low, up):
     x = symbols("x")
-    if "^" in function:
-        replaced = function.replace("^", "**")
+    replace_expr(function)
 
     if "arc" in function:
         replaced = function.replace("arc", "a")
@@ -113,12 +164,7 @@ def definite_integrate(function, low, up):
     up = float(eval(replace_bound(up)))
 
     result = integrate(replaced, (x, low, up)).evalf()
-
-    if (
-        (("1/x" in function or function == "x^-1") and (low <= 0 or low <= low + 1))
-        or (str(result) == "nan")
-        or ("I" in str(result))
-    ):
+    if (str(result) == "nan") or ("I" in str(result)):
         logging.warning("Cannot compute integral because integral does not converge.")
 
     else:
@@ -127,16 +173,17 @@ def definite_integrate(function, low, up):
         )
         print_expr(result)
         nprint("\nShow graph of area? (y/n)")
+
         show = input("(Exit the graph window when you are finished to continue) ")
 
         if show == "y":
             try:
                 nprint("\nLoading graph. Might take some time on first startup ...")
 
-                x = linspace((-up - 8), (up + 8), 200000)
+                x_array = linspace((-up - 8), (up + 8), 200000)
 
                 if "ln" in function or "log" in function:
-                    x = linspace(
+                    x_array = linspace(
                         int(floor(low)) + 1,
                         int(ceil(up)) + 8,
                         200000,
@@ -146,9 +193,12 @@ def definite_integrate(function, low, up):
                 plt.title(title)
                 plt.xlabel("x", weight="bold")
                 plt.ylabel("y", rotation=0, weight="bold")
-                plt.plot(x, f(x), color="red")
+                plt.plot(x_array, f(x_array), color="red")
                 plt.fill_between(
-                    x, f(x), where=[(x > low) and (x < up) for x in x], color="blue"
+                    x_array,
+                    f(x_array),
+                    where=[(x_array > low) and (x_array < up) for x_array in x_array],
+                    color="blue",
                 )
 
                 try:
@@ -189,11 +239,11 @@ def definite_integrate(function, low, up):
 
 
 def improper_integrate(function, low, up):
+    replace_expr(function)
+
     if "pi" in function:
         function = function.replace("pi", str(pi))
 
-    if "^" in function:
-        function = function.replace("^", "**")
     else:
         str(function)
 
@@ -230,8 +280,7 @@ def normal_limit(expr, value):
     if "pi" in expr:
         expr = expr.replace("pi", str(pi))
 
-    if "^" in expr:
-        expr = expr.replace("^", "**")
+    replace_expr(expr)
 
     if check_bound(value) is False:
         return ""
@@ -255,8 +304,7 @@ def one_side_limit(expr, value, direction):
     if "pi" in expr:
         expr = expr.replace("pi", str(pi))
 
-    if "^" in expr:
-        expr = expr.replace("^", "**")
+    replace_expr(expr)
 
     if check_bound(value) is False:
         return ""
@@ -317,6 +365,13 @@ def check_bound(bound):
         return True
 
 
+def replace_expr(expr):
+    if "^" in expr:
+        expr = expr.replace("^", "**")
+
+    return expr
+
+
 def replace_bound(bound):
     if "pi" in bound:
         bound = bound.replace("pi", str(pi))
@@ -326,12 +381,27 @@ def replace_bound(bound):
 
 
 def f(x):
-    if "abs" in di_function:
-        final = di_function.replace("abs", "fabs")
+    if "Abs" in dfunction:
+        final = dfunction.replace("Abs", "fabs")
+
     else:
-        final = di_function
+        final = dfunction
 
     final = eval(final)
+    return final
+
+
+def difunc(x):
+    if "x" in df:
+        final = eval(df)
+
+    else:
+        final = df
+    return final
+
+
+def af(x):
+    final = eval(F)
     return final
 
 
@@ -348,53 +418,6 @@ def print_expr(text):
 def nprint(text):
     print(text)
     time.sleep(0.04)
-
-
-def settings():
-    settings_path = os.path.dirname(os.path.abspath(__file__)) + "/texts/settings.txt"
-    settings = open(settings_path, mode="r")
-
-    for line in settings.readlines():
-        line = line.rstrip()
-        nprint(line)
-
-    while True:
-        nprint("\n(Current Screen: Settings Screen)\n")
-        cmd = input("Enter Command: ")
-
-        if cmd == "print":
-            nprint("\n(Current Screen: Print Settings Screen)\n")
-
-            global print_option
-            print_option = input(
-                'Set print mode: "p" (Sympy Pretty Print) or "n" (Normal Print): '
-            )
-            nprint(f'\nPrinting mode set to: "{print_option}"')
-
-        elif cmd == "graph":
-            nprint("\n(Current Screen: Graph Settings Screen)\n")
-
-            global graph_option
-            graph_option = input(
-                'Set graph mode: "f" (Fixed graph view) or "a" (Adjusted graph view): '
-            )
-            nprint(f'\nGraph mode set to: "{graph_option}"')
-
-        elif cmd == "date":
-            nprint("\n(Current Screen: Date Settings Screen)\n")
-
-            global date_option
-            date_option = input(
-                'Set date mode: "1" (YY/MM/DD) or "2" (YY/MM/DD/HH/MM/SS): '
-            )
-            nprint(f'\nDate mode set to: "{date_option}"')
-
-        elif cmd == "exit":
-            nprint("\nExiting settings ... ... ...")
-            break
-
-        else:
-            logging.warning(f'Invalid command:"{cmd}"')
 
 
 def main():
@@ -462,9 +485,10 @@ def derivacalc():
 
         if cmd == "1":
             nprint("\n(Current Screen: Derivative Screen)\n")
-            function = input("Enter a function: ")
+            global dfunction
+            dfunction = input("Enter a function: ")
             order = input("Enter order of derivative calculation: ")
-            derive(function, order)
+            derive(dfunction, order)
 
         elif cmd == "2":
             nprint("\n(Current Screen: Partial Derivative Screen)\n")
@@ -493,6 +517,8 @@ def derivacalc():
 
 
 def intecalc():
+    global dfunction
+
     instruct_path = (
         os.path.dirname(os.path.abspath(__file__)) + "/texts/intecalc_instructs.txt"
     )
@@ -507,16 +533,15 @@ def intecalc():
 
         if cmd == "1":
             nprint("\n(Current Screen: Antiderivative Screen)\n")
-            function = input("Enter a function: ")
-            antiderive(function)
+            dfunction = input("Enter a function: ")
+            antiderive(dfunction)
 
         elif cmd == "2":
             nprint("\n(Current Screen: Definite Integral Screen)\n")
-            global di_function
-            di_function = input("Enter a function: ")
+            dfunction = input("Enter a function: ")
             lower_bound = input("\nEnter the lower bound: ")
             upper_bound = input("Enter the upper bound: ")
-            print(definite_integrate(di_function, lower_bound, upper_bound))
+            print(definite_integrate(dfunction, lower_bound, upper_bound))
 
         elif cmd == "3":
             nprint("\n(Current Screen: Improper Integral Screen)\n")
@@ -569,6 +594,53 @@ def limcalc():
 
         except:
             logging.error("UnknownError: An unknown error occured.")
+
+
+def settings():
+    settings_path = os.path.dirname(os.path.abspath(__file__)) + "/texts/settings.txt"
+    settings = open(settings_path, mode="r")
+
+    for line in settings.readlines():
+        line = line.rstrip()
+        nprint(line)
+
+    while True:
+        nprint("\n(Current Screen: Settings Screen)\n")
+        cmd = input("Enter Command: ")
+
+        if cmd == "print":
+            nprint("\n(Current Screen: Print Settings Screen)\n")
+
+            global print_option
+            print_option = input(
+                'Set print mode: "p" (Sympy Pretty Print) or "n" (Normal Print): '
+            )
+            nprint(f'\nPrinting mode set to: "{print_option}"')
+
+        elif cmd == "graph":
+            nprint("\n(Current Screen: Graph Settings Screen)\n")
+
+            global graph_option
+            graph_option = input(
+                'Set graph mode: "f" (Fixed graph view) or "a" (Adjusted graph view): '
+            )
+            nprint(f'\nGraph mode set to: "{graph_option}"')
+
+        elif cmd == "date":
+            nprint("\n(Current Screen: Date Settings Screen)\n")
+
+            global date_option
+            date_option = input(
+                'Set date mode: "1" (YY/MM/DD) or "2" (YY/MM/DD/HH/MM/SS): '
+            )
+            nprint(f'\nDate mode set to: "{date_option}"')
+
+        elif cmd == "exit":
+            nprint("\nExiting settings ... ... ...")
+            break
+
+        else:
+            logging.warning(f'Invalid command:"{cmd}"')
 
 
 main()
