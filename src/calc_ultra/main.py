@@ -23,7 +23,8 @@ warnings.filterwarnings("ignore")
 
 
 def derive(function, order):
-    replace_expr(function)
+    function = replace_expr(function)
+
     if check_order(order) is True:
         global df
         df = diff(function, x, order)
@@ -35,7 +36,7 @@ def derive(function, order):
             nprint("\nSimplify/rewrite:\n")
             print_expr(simplify(df, evaluate=False))
 
-        df = str(df)
+        df = trig_rep(str(df))
 
         nprint("\nShow graph of area? (y/n)")
         show = input("(Exit the graph window when you are finished to continue) ")
@@ -50,7 +51,7 @@ def derive(function, order):
                 plt.xlabel("x", weight="bold")
                 plt.ylabel("y", rotation=0, weight="bold")
                 plt.plot(x_array, f(x_array), color="red")
-                plt.plot(x_array, difunc(x_array), color="blue")
+                plt.plot(x_array, dif(x_array), color="blue")
                 plt.axis([-7.5, 7.5, -7.5, 7.5])
                 plt.grid()
                 plt.show()
@@ -97,31 +98,31 @@ def antiderive(function):
     if "pi" in function:
         function = function.replace("pi", str(pi))
 
-    replace_expr(function)
+    function = replace_expr(function)
 
     global F
     F = Integral(function, x).doit()
 
     if "Integral" in str(F):
         logging.warning("Cannot compute integral.\n")
+        return ""
 
-    else:
-        nprint("\nAntiderivative is:\n")
-        print_expr(F)
+    nprint("\nAntiderivative is:\n")
+    print_expr(F)
 
-        if check_simp(F) is True:
-            nprint("\nSimplify/rewrite:\n")
-            print_expr(simplify(F, evaluate=False))
+    if check_simp(F) is True:
+        nprint("\nSimplify/rewrite:\n")
+        print_expr(simplify(F, evaluate=False))
 
-        F = str(F)
+    F = trig_rep(str(F))
 
-        nprint("\nDon't forget to add a constant!\n")
+    nprint("\nDon't forget to add a constant!\n")
 
-        nprint("\nShow graph of area? (y/n)")
-        show = input("(Exit the graph window when you are finished to continue) ")
+    nprint("\nShow graph of area? (y/n)")
+    show = input("(Exit the graph window when you are finished to continue) ")
 
-        if show == "y":
-            # try:
+    if show == "y":
+        try:
             nprint("\nLoading graph. Might take some time on first startup ...")
 
             x_array = linspace(-8, 8, 200000)
@@ -139,19 +140,14 @@ def antiderive(function):
 
             return "\nExited graph."
 
-        # except:
-        # logging.warning("Could not graph function.")
-        # return "\nExited graph."
+        except:
+            logging.warning("Could not graph function.")
+            return "\nExited graph."
 
 
 def definite_integrate(function, low, up):
     x = symbols("x")
-    replace_expr(function)
-
-    if "arc" in function:
-        replaced = function.replace("arc", "a")
-    else:
-        replaced = function
+    function = replace_expr(function)
 
     if check_bound(low) is False:
         return ""
@@ -163,79 +159,78 @@ def definite_integrate(function, low, up):
 
     up = float(eval(replace_bound(up)))
 
-    result = integrate(replaced, (x, low, up)).evalf()
+    result = integrate(function, (x, low, up)).evalf()
+
     if (str(result) == "nan") or ("I" in str(result)):
         logging.warning("Cannot compute integral because integral does not converge.")
+        return ""
 
-    else:
-        nprint(
-            f"\nCalculated integral of {function} from {low} to {up}. Final area is:\n"
-        )
-        print_expr(result)
-        nprint("\nShow graph of area? (y/n)")
+    nprint(f"\nCalculated integral of {function} from {low} to {up}. Final area is:\n")
+    print_expr(result)
+    nprint("\nShow graph of area? (y/n)")
 
-        show = input("(Exit the graph window when you are finished to continue) ")
+    show = input("(Exit the graph window when you are finished to continue) ")
 
-        if show == "y":
-            try:
-                nprint("\nLoading graph. Might take some time on first startup ...")
+    if show == "y":
+        try:
+            nprint("\nLoading graph. Might take some time on first startup ...")
 
-                x_array = linspace((-up - 8), (up + 8), 200000)
+            x_array = linspace((-up - 8), (up + 8), 200000)
 
-                if "ln" in function or "log" in function:
-                    x_array = linspace(
-                        int(floor(low)) + 1,
-                        int(ceil(up)) + 8,
-                        200000,
-                    )
-
-                title = "Shaded area beneath function"
-                plt.title(title)
-                plt.xlabel("x", weight="bold")
-                plt.ylabel("y", rotation=0, weight="bold")
-                plt.plot(x_array, f(x_array), color="red")
-                plt.fill_between(
-                    x_array,
-                    f(x_array),
-                    where=[(x_array > low) and (x_array < up) for x_array in x_array],
-                    color="blue",
+            if "log" in function:
+                x_array = linspace(
+                    int(floor(low)) + 1,
+                    int(ceil(up)) + 8,
+                    200000,
                 )
 
-                try:
-                    if graph_option == "f":
-                        plt.axis([-7.5, 7.5, -7.5, 7.5])
+            title = "Shaded area beneath function"
+            plt.title(title)
+            plt.xlabel("x", weight="bold")
+            plt.ylabel("y", rotation=0, weight="bold")
+            plt.plot(x_array, f(x_array), color="red")
+            plt.fill_between(
+                x_array,
+                f(x_array),
+                where=[(x_array > low) and (x_array < up) for x_array in x_array],
+                color="blue",
+            )
 
-                    elif graph_option == "a":
-                        if (float(f(low)) != 0) and (float(f(up)) != 0):
-                            plt.axis(
-                                [
-                                    low - 5,
-                                    up + 5,
-                                    float(f(round(low)))
-                                    - (float(f(round(low))) + float(f(round(up)))) / 2
-                                    - 1,
-                                    float(f(round(up)))
-                                    + (float(f(round(low))) + float(f(round(up)))) / 2
-                                    + 1,
-                                ]
-                            )
-                        elif (float(f(low)) == 0) or (float(f(up)) == 0):
-                            plt.axis([low - 5, up + 5, -(up - low) / 2, (up + low) / 2])
-
-                except:
+            try:
+                if graph_option == "f":
                     plt.axis([-7.5, 7.5, -7.5, 7.5])
 
-                plt.grid()
-                plt.show()
-
-                return "\nExited graph."
+                elif graph_option == "a":
+                    if (float(f(low)) != 0) and (float(f(up)) != 0):
+                        plt.axis(
+                            [
+                                low - 5,
+                                up + 5,
+                                float(f(round(low)))
+                                - (float(f(round(low))) + float(f(round(up)))) / 2
+                                - 1,
+                                float(f(round(up)))
+                                + (float(f(round(low))) + float(f(round(up)))) / 2
+                                + 1,
+                            ]
+                        )
+                    elif (float(f(low)) == 0) or (float(f(up)) == 0):
+                        plt.axis([low - 5, up + 5, -(up - low) / 2, (up + low) / 2])
 
             except:
-                logging.warning("Could not graph function.")
-                return "\nExited graph."
+                plt.axis([-7.5, 7.5, -7.5, 7.5])
 
-        else:
-            return "\nExiting Definite Integral Screen ... ... ...\n"
+            plt.grid()
+            plt.show()
+
+            return "\nExited graph."
+
+        except:
+            logging.warning("Could not graph function.")
+            return "\nExited graph."
+
+    else:
+        return "\nExiting Definite Integral Screen ... ... ...\n"
 
 
 def improper_integrate(function, low, up):
@@ -243,9 +238,6 @@ def improper_integrate(function, low, up):
 
     if "pi" in function:
         function = function.replace("pi", str(pi))
-
-    else:
-        str(function)
 
     if check_bound(low) is False:
         return ""
@@ -291,13 +283,13 @@ def normal_limit(expr, value):
 
     if "Limit" in str(l):
         logging.warning("Cannot compute limit.")
+        return ""
 
-    else:
-        nprint(f"\nLimit of {expr} as x approaches {value} is:\n")
-        print_expr(l)
-        if check_simp(l) is True:
-            nprint("\nSimplify/rewrite:\n")
-            print_expr(simplify(l, evaluate=False))
+    nprint(f"\nLimit of {expr} as x approaches {value} is:\n")
+    print_expr(l)
+    if check_simp(l) is True:
+        nprint("\nSimplify/rewrite:\n")
+        print_expr(simplify(l, evaluate=False))
 
 
 def one_side_limit(expr, value, direction):
@@ -325,10 +317,10 @@ def one_side_limit(expr, value, direction):
 
     if "Limit" in str(l):
         logging.warning("\nCannot compute limit.")
+        return ""
 
-    else:
-        nprint(f"\nLimit of {expr} as x approaches {value} from the {direction} is:\n")
-        print_expr(l)
+    nprint(f"\nLimit of {expr} as x approaches {value} from the {direction} is:\n")
+    print_expr(l)
 
 
 def check_simp(expr):
@@ -383,15 +375,14 @@ def replace_bound(bound):
 def f(x):
     if "Abs" in dfunction:
         final = dfunction.replace("Abs", "fabs")
-
     else:
         final = dfunction
 
-    final = eval(final)
+    final = eval(trig_rep(final))
     return final
 
 
-def difunc(x):
+def dif(x):
     if "x" in df:
         final = eval(df)
 
@@ -403,6 +394,28 @@ def difunc(x):
 def af(x):
     final = eval(F)
     return final
+
+
+def trig_rep(function):
+    if "asin" in function:
+        function = function.replace("asin", "arcsin")
+
+    if "acos" in function:
+        function = function.replace("acos", "arccos")
+
+    if "atan" in function:
+        function = function.replace("atan", "arctan")
+
+    if "asinh" in function:
+        function = function.replace("asinh", "arcsinh")
+
+    if "acosh" in function:
+        function = function.replace("acosh", "arccosh")
+
+    if "atanh" in function:
+        function = function.replace("atanh", "arctanh")
+
+    return function
 
 
 def print_expr(text):
@@ -472,7 +485,7 @@ If you find this message, type 'hi' in the general discussions - sudoer-Huatao
 
 def derivacalc():
     instruct_path = (
-        os.path.dirname(os.path.abspath(__file__)) + "/texts/derivacalc_instructs.txt"
+        os.path.dirname(os.path.abspath(__file__)) + "/texts/derivacalc.txt"
     )
     derivacalc = open(instruct_path, mode="r")
     for line in derivacalc.readlines():
@@ -520,7 +533,7 @@ def intecalc():
     global dfunction
 
     instruct_path = (
-        os.path.dirname(os.path.abspath(__file__)) + "/texts/intecalc_instructs.txt"
+        os.path.dirname(os.path.abspath(__file__)) + "/texts/intecalc.txt"
     )
     intecalc = open(instruct_path, mode="r")
     for line in intecalc.readlines():
@@ -560,7 +573,7 @@ def intecalc():
 
 def limcalc():
     instruct_path = (
-        os.path.dirname(os.path.abspath(__file__)) + "/texts/limcalc_instructs.txt"
+        os.path.dirname(os.path.abspath(__file__)) + "/texts/limcalc.txt"
     )
     limcalc = open(instruct_path, mode="r")
     for line in limcalc.readlines():
