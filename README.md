@@ -1,6 +1,6 @@
 # calc-ultra
 
-[![GPLv3 License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.2.1-blue.svg)](https://github.com/sudoer-Huatao/Calc-ULTRA_Calculus-Calculator)
+[![GPLv3 License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.2.2-blue.svg)](https://github.com/sudoer-Huatao/Calc-ULTRA_Calculus-Calculator)
 
 > **Calculus made easy**
 
@@ -63,17 +63,17 @@ This program was made using SymPy and SciPy for calculation and Matplotlib and N
 
 ## Gallery
 
-DerivaCalc implicit derivative demo:
-![derivacalc_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/a0ddc731-f673-42fd-9729-e3573ae4e4a0 "derivacalc_demo")
+DerivaCalc derivative with graph demo:
+![derivacalc_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/aa84bbc1-4004-4069-a465-5da424527fd7 "derivacalc_demo")
 
-InteCalc antiderivative demo:
-![intecalc_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/d5c6cf35-24e4-4687-bbb7-c16ebd8d1470 "intecalc_demo")
+InteCalc antiderivative with graph demo:
+![intecalc_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/63fb8c18-1d5a-4ecf-a86c-99b51e0d49b1 "intecalc_demo")
 
 InteCalc definite integral with graph demo:
-![intecalc_graph_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/d3089d09-0ce8-44e6-86bd-3825254f1d52 "intecalc_graph_demo")
+![intecalc_graph_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/489d4668-a569-484d-9201-c4530b0df182 "intecalc_graph_demo")
 
 LimCalc limit demo:
-![limcalc_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/ab333d6c-f8ae-4039-b06c-132c1473770a "limcalc_demo")
+![limcalc_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/e24e7ed8-0660-471a-a0a4-36e56b431c39 "limcalc_demo")
 
 ## License
 
