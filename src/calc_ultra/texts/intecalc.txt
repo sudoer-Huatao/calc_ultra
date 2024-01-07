@@ -19,4 +19,5 @@ Commands:
 --> 4: Exit InteCalc
 
 (Absolute value function and factorial function is only supported by definite integral computation)
- 
+
+For definite integral calculation, use E for Euler's Constant.
