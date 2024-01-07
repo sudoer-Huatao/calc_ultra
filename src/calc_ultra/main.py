@@ -1,6 +1,12 @@
+exclude = ["pi", "e"]
+
 from sympy.core.numbers import pi, E, oo
 from math import floor, ceil, erf, fabs, factorial
 from numpy import *
+
+for name in exclude:
+    del globals()[name]
+
 from sympy import (
     diff,
     idiff,
@@ -10,6 +16,8 @@ from sympy import (
     pprint,
     simplify,
     symbols,
+    pi,
+    E,
 )
 import matplotlib.pyplot as plt
 import datetime, logging, os, time, warnings
@@ -64,7 +72,7 @@ def derive(function, order):
 
 
 def partial_derive(function, var, order):
-    replace_expr(function)
+    function = replace_expr(function)
 
     if check_order(order) is True:
         df = diff(function, var, order)
@@ -80,8 +88,7 @@ def partial_derive(function, var, order):
 
 
 def implicit_derive(circ, order):
-    if "^" in circ:
-        circ = circ.replace("^", "**")
+    circ = replace_expr(circ)
 
     if check_order(order) is True:
         df = idiff(eval(circ), y, x, int(order))
@@ -95,9 +102,6 @@ def implicit_derive(circ, order):
 
 
 def antiderive(function):
-    if "pi" in function:
-        function = function.replace("pi", str(pi))
-
     function = replace_expr(function)
 
     global F
@@ -152,21 +156,40 @@ def definite_integrate(function, low, up):
     if check_bound(low) is False:
         return ""
 
-    low = float(eval(replace_bound(low)))
+    low = eval(low)
 
     if check_bound(up) is False:
         return ""
 
-    up = float(eval(replace_bound(up)))
+    up = eval(up)
 
-    result = integrate(function, (x, low, up)).evalf()
+    result = integrate(function, (x, low, up))
 
-    if (str(result) == "nan") or ("I" in str(result)):
+    up = eval(replace_bound(str(up)))
+    low = eval(replace_bound(str(low)))
+
+    num_result = integrate(function, (x, low, up)).evalf()
+
+    if (
+        (str(result) == "nan")
+        or ("I" in str(result))
+        and ("Integral" not in str(result))
+    ):
         logging.warning("Cannot compute integral because integral does not converge.")
         return ""
 
-    nprint(f"\nCalculated integral of {function} from {low} to {up}. Final area is:\n")
-    print_expr(result)
+    if "Integral" not in str(result):
+        nprint(
+            f"\nCalculated integral of {function} from {low} to {up}. Final area is:\n"
+        )
+        print_expr(result)
+
+    else:
+        nprint("\nCannot express result symbolically.")
+
+    nprint("\nNumeral evaluation/approximation:\n")
+    print_expr(num_result)
+
     nprint("\nShow graph of area? (y/n)")
 
     show = input("(Exit the graph window when you are finished to continue) ")
@@ -179,7 +202,7 @@ def definite_integrate(function, low, up):
 
             if "log" in function:
                 x_array = linspace(
-                    int(floor(low)) + 1,
+                    int(floor(low)) - 3,
                     int(ceil(up)) + 8,
                     200000,
                 )
@@ -214,6 +237,7 @@ def definite_integrate(function, low, up):
                                 + 1,
                             ]
                         )
+
                     elif (float(f(low)) == 0) or (float(f(up)) == 0):
                         plt.axis([low - 5, up + 5, -(up - low) / 2, (up + low) / 2])
 
@@ -234,34 +258,30 @@ def definite_integrate(function, low, up):
 
 
 def improper_integrate(function, low, up):
-    replace_expr(function)
-
-    if "pi" in function:
-        function = function.replace("pi", str(pi))
+    function = replace_expr(function)
 
     if check_bound(low) is False:
         return ""
 
-    if "oo" in low:
-        low = eval(low)
-    else:
-        low = float(eval(replace_bound(low)))
+    low = eval(low)
 
     if check_bound(up) is False:
         return ""
 
-    if "oo" in up:
-        up = eval(up)
-    else:
-        up = float(eval(replace_bound(up)))
+    up = eval(up)
 
     try:
         improper_area = Integral(function, (x, low, up)).principal_value()
 
-        nprint(
-            f"Calculated improper integral of {function} from {low} to {up}. Final area is:\n"
-        )
-        print_expr(improper_area)
+        if "Integral" not in str(improper_area):
+            nprint(
+                f"\nCalculated improper integral of {function} from {low} to {up}. Final area is:\n"
+            )
+            print_expr(improper_area)
+
+        else:
+            nprint("Cannot compute improper integral.")
+
         print()
 
     except ValueError:
@@ -326,6 +346,7 @@ def one_side_limit(expr, value, direction):
 def check_simp(expr):
     if str(simplify(expr, evaluate=False)) != str(expr):
         return True
+
     else:
         return False
 
@@ -336,6 +357,7 @@ def check_order(order):
             "OrderError: Order of derivative calculation is not a valid number."
         )
         return False
+
     else:
         return True
 
@@ -344,7 +366,7 @@ def check_bound(bound):
     if (
         (bound.isnumeric() is False)
         and ("pi" not in bound)
-        and ("e" not in bound)
+        and ("E" not in bound)
         and ("-" not in bound)
         and ("." not in bound)
         and ("sqrt" not in bound)
@@ -353,6 +375,7 @@ def check_bound(bound):
     ):
         logging.error("TypeError: Integration bound is a not a number.")
         return False
+
     else:
         return True
 
@@ -366,9 +389,10 @@ def replace_expr(expr):
 
 def replace_bound(bound):
     if "pi" in bound:
-        bound = bound.replace("pi", str(pi))
-    if "e" in bound:
-        bound = bound.replace("e", str(E))
+        bound = bound.replace("pi", str(pi.evalf()))
+    if "E" in bound:
+        bound = bound.replace("E", str(E.evalf()))
+
     return bound
 
 
@@ -378,21 +402,31 @@ def f(x):
     else:
         final = dfunction
 
+    if "x" not in final:
+        final = "0 * x + " + final
+
     final = eval(trig_rep(final))
+
     return final
 
 
 def dif(x):
-    if "x" in df:
-        final = eval(df)
+    if "x" not in str(df):
+        final = eval("0 * x + " + trig_rep(str(df)))
 
     else:
-        final = df
+        final = eval(df)
+
     return final
 
 
 def af(x):
-    final = eval(F)
+    if "x" not in str(F):
+        final = eval("0 * x + " + trig_rep(str(F)))
+
+    else:
+        final = eval(F)
+
     return final
 
 
@@ -484,9 +518,7 @@ If you find this message, type 'hi' in the general discussions - sudoer-Huatao
 
 
 def derivacalc():
-    instruct_path = (
-        os.path.dirname(os.path.abspath(__file__)) + "/texts/derivacalc.txt"
-    )
+    instruct_path = os.path.dirname(os.path.abspath(__file__)) + "/texts/derivacalc.txt"
     derivacalc = open(instruct_path, mode="r")
     for line in derivacalc.readlines():
         line = line.rstrip()
@@ -532,9 +564,7 @@ def derivacalc():
 def intecalc():
     global dfunction
 
-    instruct_path = (
-        os.path.dirname(os.path.abspath(__file__)) + "/texts/intecalc.txt"
-    )
+    instruct_path = os.path.dirname(os.path.abspath(__file__)) + "/texts/intecalc.txt"
     intecalc = open(instruct_path, mode="r")
     for line in intecalc.readlines():
         line = line.rstrip()
@@ -572,9 +602,7 @@ def intecalc():
 
 
 def limcalc():
-    instruct_path = (
-        os.path.dirname(os.path.abspath(__file__)) + "/texts/limcalc.txt"
-    )
+    instruct_path = os.path.dirname(os.path.abspath(__file__)) + "/texts/limcalc.txt"
     limcalc = open(instruct_path, mode="r")
     for line in limcalc.readlines():
         line = line.rstrip()
