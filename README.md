@@ -1,6 +1,6 @@
 # calc-ultra
 
-[![GPLv3 License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.2.2-blue.svg)](https://github.com/sudoer-Huatao/Calc-ULTRA_Calculus-Calculator)
+[![GPLv3 License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.2.3-blue.svg)](https://github.com/sudoer-Huatao/Calc-ULTRA_Calculus-Calculator)
 
 > **Calculus made easy**
 
@@ -28,6 +28,8 @@ This is the module package of the Calc-ULTRA calculator. For the Python script o
 > Run the calculus calculator with a single line of code
 
 Command line: `pip install calc-ultra`.
+Due to Python import identifiers restrictions, please import Calc-ULTRA as calc_ultra and not calc-ultra when you need to use the calculator.
+
 To run the calculator, import Calc-ULTRA as `calc_ultra` like so:
 
 `from calc_ultra import main`
@@ -50,7 +52,7 @@ Due to limitations of the SymPy module, **some functions cannot be integrated**.
 
 ## Test PYPI
 
-Previous test version of this project is on Test PYPI. View on <https://test.pypi.org/project/calc-ultra/>.
+Previous test versions of this project are on Test PYPI. View on <https://test.pypi.org/project/calc-ultra/>.
 
 ## Acknowledgements
 
