@@ -58,15 +58,17 @@ def derive(function, order):
                 plt.title(title)
                 plt.xlabel("x", weight="bold")
                 plt.ylabel("y", rotation=0, weight="bold")
-                plt.plot(x_array, f(x_array), color="red")
-                plt.plot(x_array, dif(x_array), color="blue")
+                plt.plot(x_array, f(x_array), color="red", label="Function")
+                plt.plot(x_array, dif(x_array), color="blue", label="Derivative")
                 plt.axis([-7.5, 7.5, -7.5, 7.5])
+                plt.legend(loc="lower left")
                 plt.grid()
                 plt.show()
 
                 return "\nExited graph."
 
             except:
+                plt.close()
                 logging.warning("Could not graph function.")
                 return "\nExited graph."
 
@@ -135,9 +137,10 @@ def antiderive(function):
             plt.title(title)
             plt.xlabel("x", weight="bold")
             plt.ylabel("y", rotation=0, weight="bold")
-            plt.plot(x_array, f(x_array), color="red")
-            plt.plot(x_array, af(x_array), color="blue")
+            plt.plot(x_array, f(x_array), color="red", label="Function")
+            plt.plot(x_array, af(x_array), color="blue", label="Antiderivative")
             plt.axis([-7.5, 7.5, -7.5, 7.5])
+            plt.legend(loc="lower left")
 
             plt.grid()
             plt.show()
@@ -145,6 +148,7 @@ def antiderive(function):
             return "\nExited graph."
 
         except:
+            plt.close()
             logging.warning("Could not graph function.")
             return "\nExited graph."
 
@@ -211,7 +215,7 @@ def definite_integrate(function, low, up):
             plt.title(title)
             plt.xlabel("x", weight="bold")
             plt.ylabel("y", rotation=0, weight="bold")
-            plt.plot(x_array, f(x_array), color="red")
+            plt.plot(x_array, f(x_array), color="red", label="Function")
             plt.fill_between(
                 x_array,
                 f(x_array),
@@ -244,12 +248,14 @@ def definite_integrate(function, low, up):
             except:
                 plt.axis([-7.5, 7.5, -7.5, 7.5])
 
+            plt.legend(loc="lower left")
             plt.grid()
             plt.show()
 
             return "\nExited graph."
 
         except:
+            plt.close()
             logging.warning("Could not graph function.")
             return "\nExited graph."
 
