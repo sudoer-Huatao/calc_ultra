@@ -3,6 +3,7 @@ exclude = ["pi", "e"]
 from sympy.core.numbers import pi, E, oo
 from math import floor, ceil, erf, fabs, factorial
 from numpy import *
+import numpy as np
 
 for name in exclude:
     del globals()[name]
@@ -16,8 +17,6 @@ from sympy import (
     pprint,
     simplify,
     symbols,
-    pi,
-    E,
 )
 import matplotlib.pyplot as plt
 import datetime, logging, os, time, warnings
@@ -28,6 +27,31 @@ import datetime, logging, os, time, warnings
 # Disable auto Python warnings
 
 warnings.filterwarnings("ignore")
+
+
+def simple():
+    nprint(
+        '\n(Current Screen: Simple Calculation Screen)\n("q" to quit)\nEnter any expression to start:\n'
+    )
+
+    while True:
+        expr = input()
+
+        try:
+            if expr != "q":
+                print("\nResult:")
+                if "pi" in expr:
+                    expr = expr.replace("pi", str(np.pi))
+
+                result = eval(replace_bound(expr))
+                pprint(result)
+                print()
+
+            else:
+                break
+
+        except:
+            logging.error(f'Could not parse: "{expr}"\n')
 
 
 def derive(function, order):
@@ -455,6 +479,21 @@ def trig_rep(function):
     if "atanh" in function:
         function = function.replace("atanh", "arctanh")
 
+    if "csc" in function:
+        function = function.replace("csc", "1/sin")
+
+    if "sec" in function:
+        function = function.replace("sec", "1/cos")
+
+    if "cot" in function:
+        function = function.replace("cot", "1/tan")
+
+    if "pi" in function:
+        function = function.replace("pi", str(np.pi))
+
+    if "E" in function:
+        function = function.replace("E", str(np.e))
+
     return function
 
 
@@ -508,9 +547,12 @@ def main():
             limcalc()
 
         elif cmd == "4":
-            settings()
+            simple()
 
         elif cmd == "5":
+            settings()
+
+        elif cmd == "6":
             nprint("\nExiting Calc-ULTRA ... ... ...\n")
             break
 
