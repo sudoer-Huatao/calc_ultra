@@ -1,6 +1,6 @@
 # calc-ultra
 
-[![GPLv3 License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.2.4-blue.svg)](https://github.com/sudoer-Huatao/Calc-ULTRA_Calculus-Calculator)
+[![GPLv3 License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.2.5-blue.svg)](https://github.com/sudoer-Huatao/Calc-ULTRA_Calculus-Calculator)
 
 > **Calculus made easy**
 
@@ -10,12 +10,15 @@ The Calc-ULTRA calculus calculator, but as a module!
 
 Supports:
 
+- Simple calculations
 - Derivatives
 - Partials
 - Implicit differentiation
 - Antiderivatives
 - Definite integrals
 - Improper integrals
+- Limits
+- One-sided limits
 
 **NEW SINCE V1.2.1:** Graphs for differentiation and integrals are supported!
 
