@@ -1,13 +1,27 @@
-exclude = ["pi", "e"]
-
 from sympy.core.numbers import pi, E, oo
-from math import floor, ceil, erf, fabs, factorial
-from numpy import *
+from math import floor, ceil, erf, factorial, gamma
+from numpy import (
+    linspace,
+    exp,
+    log,
+    sqrt,
+    abs,
+    sin,
+    cos,
+    tan,
+    arcsin,
+    arccos,
+    arctan,
+    sinh,
+    cosh,
+    tanh,
+    arcsinh,
+    arccosh,
+    arctanh,
+)
 import numpy as np
-
-for name in exclude:
-    del globals()[name]
-
+# Sympy uses symbolic Pi and e, which cannot be graphed by matplotlib
+# so later np.pi np.e are explicitly used instead.
 from sympy import (
     diff,
     idiff,
@@ -17,12 +31,11 @@ from sympy import (
     pprint,
     simplify,
     symbols,
+    polygamma,
 )
 import matplotlib.pyplot as plt
 import datetime, logging, os, time, warnings
 
-
-# This program requires the Sympy, NumPy, and MatPlotLib modules installed!
 
 # Disable auto Python warnings
 
@@ -39,6 +52,7 @@ def simple():
 
         try:
             if expr != "q":
+                # Easy to exit unlike VIM ;)
                 print("\nResult:")
                 if "pi" in expr:
                     expr = expr.replace("pi", str(np.pi))
@@ -76,7 +90,7 @@ def derive(function, order):
         if show == "y":
             try:
                 nprint("\nLoading graph. Might take some time on first startup ...")
-                x_array = linspace(-8, 8, 200000)
+                x_array = linspace(-50, 50, 200000)
 
                 title = "Function (red) and derivative (blue)"
                 plt.title(title)
@@ -155,7 +169,7 @@ def antiderive(function):
         try:
             nprint("\nLoading graph. Might take some time on first startup ...")
 
-            x_array = linspace(-8, 8, 200000)
+            x_array = linspace(-100, 100, 200000)
 
             title = "Function (red) and antiderivative (blue, C = 0)"
             plt.title(title)
@@ -197,6 +211,8 @@ def definite_integrate(function, low, up):
     low = eval(replace_bound(str(low)))
 
     num_result = integrate(function, (x, low, up)).evalf()
+    # Composite functions usually do not have primitive antiderivatives
+    # so calc-ultra is equipped with both symbolic and numerical answers.
 
     if (
         (str(result) == "nan")
@@ -239,7 +255,7 @@ def definite_integrate(function, low, up):
             plt.title(title)
             plt.xlabel("x", weight="bold")
             plt.ylabel("y", rotation=0, weight="bold")
-            plt.plot(x_array, f(x_array), color="red", label="Function")
+            plt.plot(x_array, f(x_array), color="red", label="Function") # TODO: patch factorial function graphing bug
             plt.fill_between(
                 x_array,
                 f(x_array),
@@ -252,6 +268,8 @@ def definite_integrate(function, low, up):
                     plt.axis([-7.5, 7.5, -7.5, 7.5])
 
                 elif graph_option == "a":
+                    # Adjusted graph view is sometimes better for
+                    # large graphs with large bounds.
                     if (float(f(low)) != 0) and (float(f(up)) != 0):
                         plt.axis(
                             [
@@ -301,7 +319,7 @@ def improper_integrate(function, low, up):
     up = eval(up)
 
     try:
-        improper_area = Integral(function, (x, low, up)).principal_value()
+        improper_area = Integral(function, (x, low, up)).principal_value() # Cauchy Principal Value
 
         if "Integral" not in str(improper_area):
             nprint(
@@ -451,8 +469,8 @@ def dif(x):
 
 
 def af(x):
-    if "x" not in str(F):
-        final = eval("0 * x + " + trig_rep(str(F)))
+    if "x" not in F:
+        final = eval("0 * x + " + F)
 
     else:
         final = eval(F)
@@ -461,6 +479,9 @@ def af(x):
 
 
 def trig_rep(function):
+    # Sympy and Numpy trig functions are vastly different
+    # and uses different prefixes. Thus this replacement
+    # algorithm is needed.
     if "asin" in function:
         function = function.replace("asin", "arcsin")
 
@@ -481,12 +502,24 @@ def trig_rep(function):
 
     if "csc" in function:
         function = function.replace("csc", "1/sin")
+    
+    # Unfortunately, Numpy does not have an implemented csc,
+    # sec, cot, csch, etc. so we have to implement our own.
 
     if "sec" in function:
         function = function.replace("sec", "1/cos")
 
     if "cot" in function:
         function = function.replace("cot", "1/tan")
+
+    if "csch" in function:
+        function = function.replace("csch", "1/sinh")
+
+    if "sech" in function:
+        function = function.replace("sech", "1/cosh")
+
+    if "coth" in function:
+        function = function.replace("coth", "1/tanh")
 
     if "pi" in function:
         function = function.replace("pi", str(np.pi))
@@ -519,6 +552,7 @@ def main():
     while True:
         instruct_path = (
             os.path.dirname(os.path.abspath(__file__)) + "/texts/main_screen.txt"
+            # TODO: make the PATH compatible with Windows
         )
         main = open(instruct_path, mode="r")
         for line in main.readlines():
