@@ -1,0 +1,4 @@
+sympy>=1.12
+numpy>=1.26.2
+matplotlib>=3.8.2
+rich>=13.7.1
