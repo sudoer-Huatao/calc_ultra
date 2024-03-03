@@ -27,18 +27,14 @@ This is the module package of the Calc-ULTRA calculator. For the Python script o
 
 > Run the calculus calculator with a single line of code
 
-Command line: `pip install calc-ultra`.
-Due to Python import identifiers restrictions, please import Calc-ULTRA as calc_ultra and not calc-ultra when you need to use the calculator.
+Command line: `pip3 install calc-ultra`.
+Due to Python import identifiers restrictions, please import Calc-ULTRA as "calc_ultra" and not "calc-ultra" when you need to use the calculator.
 
 To run the calculator, import Calc-ULTRA as `calc_ultra` like so:
 
 `from calc_ultra import main`
 
-Make sure you have the latest version installed. For example, if the latest version is 1.0.2, type `pip install calc-ultra==1.0.2` to reinstall the module.
-
-Demo (version used: v1.0.1):
-
-<https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/17170f6e-4d7a-42ef-8d1d-121cde82f26a>
+Make sure you have the latest version installed. To update calc-ultra, run `pip3 install --upgrade calc-ultra`.
 
 ## Requirements
 
