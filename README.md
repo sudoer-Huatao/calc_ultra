@@ -10,12 +10,15 @@ The Calc-ULTRA calculus calculator, but as a module!
 
 Supports:
 
+- Simple calculations
 - Derivatives
 - Partials
 - Implicit differentiation
 - Antiderivatives
 - Definite integrals
 - Improper integrals
+- Limits
+- One-sided limits
 
 **NEW SINCE V1.2.1:** Graphs for differentiation and integrals are supported!
 
@@ -28,6 +31,7 @@ This is the module package of the Calc-ULTRA calculator. For the Python script o
 > Run the calculus calculator with a single line of code
 
 Command line: `pip3 install calc-ultra`.
+
 Due to Python import identifiers restrictions, please import Calc-ULTRA as "calc_ultra" and not "calc-ultra" when you need to use the calculator.
 
 To run the calculator, import Calc-ULTRA as `calc_ultra` like so:

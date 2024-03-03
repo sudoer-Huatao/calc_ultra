@@ -30,12 +30,15 @@ The Calc-ULTRA calculus calculator, but as a module!
 
 Supports:
 
+- Simple calculations
 - Derivatives
 - Partials
 - Implicit differentiation
 - Antiderivatives
 - Definite integrals
 - Improper integrals
+- Limits
+- One-sided limits
 
 **NEW SINCE V1.2.1:** Graphs for differentiation and integrals are supported!
 

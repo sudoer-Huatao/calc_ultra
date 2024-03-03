@@ -27,6 +27,7 @@ Commands:
 --> 1: Open DerivaCalc
 --> 2: Open InteCalc
 --> 3: Open LimCalc
---> 4: Open calculator settings
---> 5: Quit Calc-ULTRA
+--> 4: Open basic calculation interface
+--> 5: Open calculator settings
+--> 6: Quit Calc-ULTRA
 
