@@ -1,6 +1,6 @@
 # calc-ultra
 
-[![GPLv3 License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.2.4-blue.svg)](https://github.com/sudoer-Huatao/Calc-ULTRA_Calculus-Calculator)
+[![GPLv3 License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.3.1-blue.svg)](https://github.com/sudoer-Huatao/Calc-ULTRA_Calculus-Calculator)
 
 > **Calculus made easy**
 
@@ -42,7 +42,7 @@ Demo (version used: v1.0.1):
 
 ## Requirements
 
-This program requires the `sympy`,  `numpy`, and `matplotlib` modules installed. Other required modules are built in to most Python IDEs.
+This program requires the `sympy`,  `numpy`, `rich`, and `matplotlib` modules installed. Other required modules are built in to most Python IDEs.
 
 ## Warnings
 
@@ -61,21 +61,21 @@ Previous test versions of this project are on Test PYPI. View on <https://test.p
 A general thank-you to all GitHub users who gave feedback and/or starred this repository. ⭐️
 And... a SPECIAL THANK-YOU to @Haobot for troubleshooting and feedback! 👍❤️
 
-This program was made using SymPy and SciPy for calculation and Matplotlib and NumPy for graphing.
+This program was made using SymPy for calculation and Matplotlib and NumPy for graphing.
 
 ## Gallery
 
 DerivaCalc derivative with graph demo:
-![derivacalc_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/aa84bbc1-4004-4069-a465-5da424527fd7 "derivacalc_demo")
+![derivacalc_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/2cac3688-d1da-4b73-b121-b6a2c7cf471c "derivacalc_demo")
 
 InteCalc antiderivative with graph demo:
-![intecalc_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/63fb8c18-1d5a-4ecf-a86c-99b51e0d49b1 "intecalc_demo")
+![intecalc_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/bcfea09c-078f-4344-9ff0-91a414614244 "intecalc_demo")
 
 InteCalc definite integral with graph demo:
-![intecalc_graph_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/489d4668-a569-484d-9201-c4530b0df182 "intecalc_graph_demo")
+![intecalc_graph_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/573e1b76-98f8-492a-845a-721f8d7ccd63 "intecalc_graph_demo")
 
 LimCalc limit demo:
-![limcalc_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/e24e7ed8-0660-471a-a0a4-36e56b431c39 "limcalc_demo")
+![limcalc_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/c1069e1c-27ef-4b7a-b68b-49432ed31e5f "limcalc_demo")
 
 ## License
 
