@@ -7,4 +7,5 @@
 --> 'print': set printing mode.
 --> 'graph': set graph display.
 --> 'date' : set date display.
+--> 'style': set graph style.
 --> 'exit' : exit settings.
