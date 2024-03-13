@@ -1,5 +1,6 @@
 from sympy.core.numbers import pi, E, oo
-from math import floor, ceil, erf, factorial, gamma
+from math import floor, ceil
+from scipy.special import gamma, polygamma, erf
 from rich import print
 from numpy import (
     linspace,
@@ -33,7 +34,6 @@ from sympy import (
     pprint,
     simplify,
     symbols,
-    polygamma,
 )
 import matplotlib.pyplot as plt
 import datetime, logging, os, time, warnings
@@ -44,7 +44,7 @@ import datetime, logging, os, time, warnings
 warnings.filterwarnings("ignore")
 
 
-def simple():
+def simp():
     print(
         '\n[bold bright_green](Current Screen: Simple Calculation Screen)[/bold bright_green]\n("q" to quit)\nEnter any expression to start:\n'
     )
@@ -109,12 +109,12 @@ def derive(function, order):
                 plt.grid()
                 plt.show()
 
-                return "\nExited graph."
+                print("\nExited graph.\n")
 
             except:
                 plt.close()
                 logging.warning("Could not graph function.")
-                return "\nExited graph."
+                print("\nExited graph.")
 
 
 def partial_derive(function, var, order):
@@ -123,13 +123,13 @@ def partial_derive(function, var, order):
     if check_order(order) is True:
         df = diff(function, var, order)
 
-        nprint(
+        print(
             f"\nPartial derivative of [bright_magenta]{function}[/bright_magenta] in respect to {var} of order {order} is:\n"
         )
         print_expr(df)
 
         if check_simp(df) is True:
-            nprint("\nSimplify/rewrite:\n")
+            print("\nSimplify/rewrite:\n")
             print_expr(simplify(df, evaluate=False))
 
 
@@ -139,11 +139,13 @@ def implicit_derive(circ, order):
     if check_order(order) is True:
         df = idiff(eval(circ), y, x, int(order))
 
-        nprint(f"\nDerivative of [bright_magenta]{circ}[/bright_magenta] with order {order} is:\n")
+        print(
+            f"\nDerivative of [bright_magenta]{circ}[/bright_magenta] with order {order} is:\n"
+        )
         print_expr(df)
 
         if str(simplify(df, evaluate=False)) != str(df):
-            nprint("\nSimplify/rewrite:\n")
+            print("\nSimplify/rewrite:\n")
             print_expr(simplify(df, evaluate=False))
 
 
@@ -191,15 +193,15 @@ def antiderive(function):
             plt.grid()
             plt.show()
 
-            return "\nExited graph."
+            print("\nExited graph.\n")
 
         except:
             plt.close()
             logging.warning("Could not graph function.")
-            return "\nExited graph."
+            print("\nExited graph.\n")
 
 
-def definite_integrate(function, low, up):
+def def_int(function, low, up):
     x = symbols("x")
     function = replace_expr(function)
 
@@ -227,9 +229,7 @@ def definite_integrate(function, low, up):
         or ("I" in str(result))
         and ("Integral" not in str(result))
     ):
-        logging.warning(
-            "Cannot compute integral because integral does not converge."
-        )
+        logging.warning("Cannot compute integral because integral does not converge.")
         return ""
 
     if "Integral" not in str(result):
@@ -254,22 +254,31 @@ def definite_integrate(function, low, up):
                 "\n[bright_yellow]Loading graph. Might take some time on first startup ...[/bright_yellow]"
             )
 
-            x_array = linspace((-up - 8), (up + 8), 200000)
+            x_array = linspace(-100, 100, 200000)
 
             if "log" in function:
                 x_array = linspace(
-                    int(floor(low)) - 3,
-                    int(ceil(up)) + 8,
+                    0.00000001,
+                    100,
                     200000,
                 )
+
+            if "factorial" in function:
+                x_array = linspace(
+                    0,
+                    100,
+                    200000,
+                )
+
+            # This is just the gamma function shifted one unit left
+            # Of course, the factorial is only defined for x >= 0
 
             title = "Shaded area beneath function"
             plt.title(title)
             plt.xlabel("x", weight="bold")
             plt.ylabel("y", rotation=0, weight="bold")
-            plt.plot(
-                x_array, f(x_array), color="red", label="Function"
-            )  # TODO: patch factorial function graphing bug
+            plt.plot(x_array, f(x_array), color="red", label="Function")
+
             plt.fill_between(
                 x_array,
                 f(x_array),
@@ -308,18 +317,18 @@ def definite_integrate(function, low, up):
             plt.grid()
             plt.show()
 
-            return "\nExited graph."
+            return "\nExited graph.\n"
 
         except:
             plt.close()
             logging.warning("Could not graph function.")
-            return "\nExited graph."
+            return "\nExited graph.\n"
 
     else:
         return "\n[bright_yellow]Exiting Definite Integral Screen ... ... ...[/bright_yellow]\n"
 
 
-def improper_integrate(function, low, up):
+def improp_int(function, low, up):
     function = replace_expr(function)
 
     if check_bound(low) is False:
@@ -344,17 +353,54 @@ def improper_integrate(function, low, up):
             print_expr(improper_area)
 
         else:
-            nprint("Cannot compute improper integral.")
+            print("Cannot compute improper integral.")
 
         print()
 
     except ValueError:
-        logging.warning(
-            "ValueError: Singularity while computing improper integral.\n"
-        )
+        logging.warning("ValueError: Singularity while computing improper integral.\n")
 
 
-def normal_limit(expr, value):
+def double_int(function, out_low, out_up, in_low, in_up):
+    function = replace_expr(function)
+
+    if check_bound(out_low) is False:
+        return ""
+
+    out_low = eval(out_low)
+
+    if check_bound(out_up) is False:
+        return ""
+
+    out_up = eval(out_up)
+
+    in_low = eval(in_low)
+
+    in_up = eval(in_up)
+
+    out_up = eval(replace_bound(str(out_up)))
+    out_low = eval(replace_bound(str(out_low)))
+    in_up = eval(replace_bound(str(in_up)))
+    in_low = eval(replace_bound(str(in_low)))
+
+    result = integrate(function, (y, in_low, in_up), (x, out_low, out_up))
+
+    if "Integral" in str(result):
+        logging.warning("Cannot compute integral.\n")
+        return ""
+
+    print(
+        f"\nDouble integral of [bright_magenta]{function}[/bright_magenta] with inner bounds [bright_cyan]{in_low}[/bright_cyan] and [bright_cyan]{in_up}[/bright_cyan] and outer bounds {out_low} and {out_up} is:\n"
+    )
+    print_expr(result)
+    print("")
+
+    if check_simp(result) is True:
+        print("\nSimplify/rewrite:\n")
+        print_expr(simplify(result, evaluate=False))
+
+
+def lim(expr, value):
     if "pi" in expr:
         expr = expr.replace("pi", str(pi))
 
@@ -371,14 +417,25 @@ def normal_limit(expr, value):
         logging.warning("Cannot compute limit.")
         return ""
 
-    print(f"\nLimit of [bright_magenta]{expr}[/bright_magenta] as x approaches {value} is:\n")
-    print_expr(l)
-    if check_simp(l) is True:
-        print("\nSimplify/rewrite:\n")
-        print_expr(simplify(l, evaluate=False))
+    if limit(expr, x, value, "+") != limit(expr, x, value, "-"):
+        print(
+            "\nThe limit does not exist (i.e., the limit approaching from the right does not equal the limit approaching from the left)."
+        )
+        print(
+            "Use the one-side limit calculation of LimCalc to calculate the limit at one side.\n"
+        )
+
+    else:
+        print(
+            f"\nLimit of [bright_magenta]{expr}[/bright_magenta] as x approaches {value} is:\n"
+        )
+        print_expr(l)
+        if check_simp(l) is True:
+            print("\nSimplify/rewrite:\n")
+            print_expr(simplify(l, evaluate=False))
 
 
-def one_side_limit(expr, value, direction):
+def side_lim(expr, value, direction):
     if "pi" in expr:
         expr = expr.replace("pi", str(pi))
 
@@ -396,9 +453,7 @@ def one_side_limit(expr, value, direction):
         direction_sign = "+"
 
     else:
-        logging.error(
-            "\nTypeError: Direction is neither right or left."
-        )
+        logging.error("\nTypeError: Direction is neither right or left.")
         return ""
 
     l = limit(expr, x, value, dir=direction_sign)
@@ -443,9 +498,7 @@ def check_bound(bound):
         and ("oo" not in bound)
         and ("/" not in bound)
     ):
-        logging.error(
-            "TypeError: Integration bound is a not a number."
-        )
+        logging.error("TypeError: Integration bound is not a number.")
         return False
 
     else:
@@ -455,6 +508,12 @@ def check_bound(bound):
 def replace_expr(expr):
     if "^" in expr:
         expr = expr.replace("^", "**")
+
+    if "arc" in expr:
+        expr = expr.replace("arc", "a")
+        print(
+            f'[bold bright_red]Showing results for "{expr}". (Did you make a mistake?)[/bold bright_red]'
+        )
 
     return expr
 
@@ -500,6 +559,10 @@ def af(x):
         final = eval(F)
 
     return final
+
+
+def factorial(x):
+    return gamma(x + 1)
 
 
 def trig_rep(function):
@@ -564,6 +627,16 @@ def print_expr(text):
         printing_methods["p"](text)
 
 
+def err():
+    nprint(
+        "\n[bold bright_red]Check if your input is valid. You might have made the following mistakes:[/bold bright_red]"
+    )
+    nprint(
+        '[bold bright_red] - Inverse trigs: "arc" instead of "a". "asin(x)" is correct, "arcsin(x)" is not.[/bold bright_red]'
+    )
+    nprint('[bold bright_red] - Base of log: "e" instead of "E".[/bold bright_red]\n')
+
+
 def nprint(text):
     print(text)
     time.sleep(0.04)
@@ -595,8 +668,8 @@ def main():
         except:
             now = (datetime.datetime.now()).strftime("%Y/%m/%d %H:%M:%S")
 
-        nprint(f"\n(Time now is: {now})")
-        nprint("[bold bright_green](Current Screen: Main Screen)[/bold bright_green]\n")
+        print(f"\n(Time now is: {now})\n")
+        print("[bold bright_green](Current Screen: Main Screen)[/bold bright_green]\n")
         print("[bright_magenta]Enter Command: [/bright_magenta]", end="")
         cmd = input()
 
@@ -610,7 +683,7 @@ def main():
             limcalc()
 
         elif cmd == "4":
-            simple()
+            simp()
 
         elif cmd == "5":
             settings()
@@ -629,128 +702,166 @@ If you find this message, type 'hi' in the general discussions - sudoer-Huatao
 
 
 def derivacalc():
-    while True:
-        instruct_path = os.path.dirname(os.path.abspath(__file__)) + "/texts/derivacalc.txt"
-        derivacalc = open(instruct_path, mode="r")
-        for line in derivacalc.readlines():
-            line = line.rstrip()
-            if ("---" in line) or ("|" in line):
-                nprint("[gold1]" + line + " [/gold1]")
-            else:
-                nprint(line)
-        print("\n[bold bright_green](Current Screen: DerivaCalc Main Screen)[/bold bright_green]\n")
-        print("[bright_magenta]Enter Command: [/bright_magenta]", end="")
-        cmd = input()
-
-        if cmd == "1":
-            nprint("\n[bold bright_green](Current Screen: Derivative Screen)[/bold bright_green]\n")
-            global dfunction
-            dfunction = input("Enter a function: ")
-            order = input("Enter order of derivative calculation: ")
-            derive(dfunction, order)
-
-        elif cmd == "2":
-            nprint(
-                "\n[bold bright_green](Current Screen: Partial Derivative Screen)[/bold bright_green]\n"
-            )
-            function = input("Enter a function containing x and y or x and y and z: ")
-            var = input("Enter variable to differentiate in respect to: ")
-            if var != "x" and var != "y" and var != "z":
-                logging.error(
-                    "[bold bright_red]Variable to differentite in respect to is invalid.[/bold bright_red]"
-                )
-            else:
-                order = input("Enter the order of partial derivative calculation: ")
-                partial_derive(function, var, order)
-
-        elif cmd == "3":
-            nprint(
-                "\n[bold bright_green](Current Screen: Implicit Derivative Screen)[/bold bright_green]\n"
-            )
-            circ = input(
-                "Enter the left side of an equation containing x and y: (right side default as 0) "
-            )
-            order = input("Enter order of implicit derivative calculation: ")
-            implicit_derive(circ, order)
-
-        elif cmd == "4":
-            nprint("\n[bright_yellow]Exiting DerivaCalc ... ... ...[/bright_yellow]")
-            break
-
+    instruct_path = os.path.dirname(os.path.abspath(__file__)) + "/texts/derivacalc.txt"
+    derivacalc = open(instruct_path, mode="r")
+    for line in derivacalc.readlines():
+        line = line.rstrip()
+        if ("---" in line) or ("|" in line):
+            nprint("[gold1]" + line + " [/gold1]")
         else:
-            logging.warning(f'Invalid command:"{cmd}"')
+            nprint(line)
+    print()
+
+    while True:
+        try:
+            nprint(
+                "\n[bold bright_green](Current Screen: DerivaCalc Main Screen)[/bold bright_green]\n"
+            )
+            print("[bright_magenta]Enter Command: [/bright_magenta]", end="")
+            cmd = input()
+
+            if cmd == "1":
+                nprint(
+                    "\n[bold bright_green](Current Screen: Derivative Screen)[/bold bright_green]\n"
+                )
+                global dfunction
+                dfunction = input("Enter a function: ")
+                order = input("Enter order of derivative calculation: ")
+                derive(dfunction, order)
+
+            elif cmd == "2":
+                nprint(
+                    "\n[bold bright_green](Current Screen: Partial Derivative Screen)[/bold bright_green]\n"
+                )
+                function = input(
+                    "Enter a function containing x and y or x and y and z: "
+                )
+                var = input("Enter variable to differentiate in respect to: ")
+                if var != "x" and var != "y" and var != "z":
+                    logging.error(
+                        "[bold bright_red]Variable to differentite in respect to is invalid.[/bold bright_red]"
+                    )
+                else:
+                    order = input("Enter the order of partial derivative calculation: ")
+                    partial_derive(function, var, order)
+
+            elif cmd == "3":
+                nprint(
+                    "\n[bold bright_green](Current Screen: Implicit Derivative Screen)[/bold bright_green]\n"
+                )
+                circ = input(
+                    "Enter the left side of an equation containing x and y: (right side default as 0) "
+                )
+                order = input("Enter order of implicit derivative calculation: ")
+                implicit_derive(circ, order)
+
+            elif cmd == "4":
+                print("\n[bright_yellow]Exiting DerivaCalc ... ... ...[/bright_yellow]")
+                break
+
+            else:
+                logging.warning(f'Invalid command:"{cmd}"')
+        except:
+            logging.error("UnknownError: An unknown error occured.")
+            err()
 
 
 def intecalc():
     global dfunction
 
-    while True:
-        instruct_path = os.path.dirname(os.path.abspath(__file__)) + "/texts/intecalc.txt"
-        intecalc = open(instruct_path, mode="r")
-        for line in intecalc.readlines():
-            line = line.rstrip()
-            if ("---" in line) or ("|" in line):
-                nprint("[gold1]" + line + " [/gold1]")
-            else:
-                nprint(line)
-        nprint("[bold bright_green](Current Screen: InteCalc Main Screen)[/bold bright_green]\n")
-        print("[bright_magenta]Enter Command: [/bright_magenta]", end="")
-        cmd = input()
-
-        if cmd == "1":
-            nprint(
-                "\n[bold bright_green](Current Screen: Antiderivative Screen)[/bold bright_green]\n"
-            )
-            dfunction = input("Enter a function: ")
-            antiderive(dfunction)
-
-        elif cmd == "2":
-            nprint(
-                "\n[bold bright_green](Current Screen: Definite Integral Screen)[/bold bright_green]\n"
-            )
-            dfunction = input("Enter a function: ")
-            lower_bound = input("\nEnter the lower bound: ")
-            upper_bound = input("Enter the upper bound: ")
-            print(definite_integrate(dfunction, lower_bound, upper_bound))
-
-        elif cmd == "3":
-            nprint(
-                "\n[bold bright_green](Current Screen: Improper Integral Screen)[/bold bright_green]\n"
-            )
-            function = input("Enter a function: ")
-            lower_bound = input("\nEnter the lower bound: ")
-            upper_bound = input("Enter the upper bound: ")
-            improper_integrate(function, lower_bound, upper_bound)
-
-        elif cmd == "4":
-            nprint("\n[bright_yellow]Exiting InteCalc ... ... ...[/bright_yellow]")
-            break
-
+    instruct_path = os.path.dirname(os.path.abspath(__file__)) + "/texts/intecalc.txt"
+    intecalc = open(instruct_path, mode="r")
+    for line in intecalc.readlines():
+        line = line.rstrip()
+        if ("---" in line) or ("|" in line):
+            nprint("[gold1]" + line + " [/gold1]")
         else:
-            logging.warning(f'Invalid command: "{cmd}"')
+            nprint(line)
+    print()
+
+    while True:
+        try:
+            nprint(
+                "[bold bright_green](Current Screen: InteCalc Main Screen)[/bold bright_green]\n"
+            )
+            print("[bright_magenta]Enter Command: [/bright_magenta]", end="")
+            cmd = input()
+
+            if cmd == "1":
+                nprint(
+                    "\n[bold bright_green](Current Screen: Antiderivative Screen)[/bold bright_green]\n"
+                )
+                dfunction = input("Enter a function: ")
+                antiderive(dfunction)
+
+            elif cmd == "2":
+                nprint(
+                    "\n[bold bright_green](Current Screen: Definite Integral Screen)[/bold bright_green]\n"
+                )
+                dfunction = input("Enter a function: ")
+                lower_bound = input("\nEnter the lower bound: ")
+                upper_bound = input("Enter the upper bound: ")
+                print(def_int(dfunction, lower_bound, upper_bound))
+
+            elif cmd == "3":
+                nprint(
+                    "\n[bold bright_green](Current Screen: Improper Integral Screen)[/bold bright_green]\n"
+                )
+                function = input("Enter a function: ")
+                lower_bound = input("\nEnter the lower bound: ")
+                upper_bound = input("Enter the upper bound: ")
+                improp_int(function, lower_bound, upper_bound)
+
+            elif cmd == "4":
+                nprint(
+                    "\n[bold bright_green](Current Screen: Double Integral Screen)[/bold bright_green]\n"
+                )
+                function = input("Enter a function: ")
+                outer_low = input("\nEnter the lower outer bound: ")
+                outer_up = input("Enter the upper outer bound: ")
+                inner_low = input("\nEnter the lower inner bound: ")
+                inner_up = input("Enter the upper inner bound: ")
+                double_int(function, outer_low, outer_up, inner_low, inner_up)
+
+            elif cmd == "5":
+                print("\n[bright_yellow]Exiting InteCalc ... ... ...[/bright_yellow]")
+                break
+
+            else:
+                logging.warning(f'Invalid command: "{cmd}"')
+        except:
+            logging.error(
+                "UnknownError: An unknown error occured. Try the following things:"
+            )
+            err()
 
 
 def limcalc():
-    while True:
-        instruct_path = os.path.dirname(os.path.abspath(__file__)) + "/texts/limcalc.txt"
-        limcalc = open(instruct_path, mode="r")
-        for line in limcalc.readlines():
-            line = line.rstrip()
-            if ("---" in line) or ("|" in line):
-                nprint("[gold1]" + line + " [/gold1]")
-            else:
-                nprint(line)
+    instruct_path = os.path.dirname(os.path.abspath(__file__)) + "/texts/limcalc.txt"
+    limcalc = open(instruct_path, mode="r")
+    for line in limcalc.readlines():
+        line = line.rstrip()
+        if ("---" in line) or ("|" in line):
+            nprint("[gold1]" + line + " [/gold1]")
+        else:
+            nprint(line)
+    print()
 
+    while True:
         try:
-            nprint("\n[bold bright_green](Current Screen: LimCalc Main Screen)[/bold bright_green]\n")
+            nprint(
+                "\n[bold bright_green](Current Screen: LimCalc Main Screen)[/bold bright_green]\n"
+            )
             print("[purple]Enter Command: [/purple]", end="")
             cmd = input()
 
             if cmd == "1":
-                nprint("\n[bold bright_green](Current screen: Limit Screen)[/bold bright_green]\n")
+                nprint(
+                    "\n[bold bright_green](Current screen: Limit Screen)[/bold bright_green]\n"
+                )
                 expr = input("Enter an expression: ")
                 value = input("Enter point of evaluation: ")
-                normal_limit(expr, value)
+                lim(expr, value)
 
             elif cmd == "2":
                 nprint(
@@ -759,10 +870,10 @@ def limcalc():
                 expr = input("Enter an expression: ")
                 value = input("Enter point of evaluation: ")
                 direction = input("Enter direction of limit ('left' or 'right'): ")
-                one_side_limit(expr, value, direction)
+                side_lim(expr, value, direction)
 
             elif cmd == "3":
-                nprint("\n[bright_yellow]Exiting LimCalc ... ... ...[/bright_yellow]")
+                print("\n[bright_yellow]Exiting LimCalc ... ... ...[/bright_yellow]")
                 break
 
             else:
@@ -770,13 +881,16 @@ def limcalc():
 
         except:
             logging.error(
-                "UnknownError: An unknown error occured."
+                "UnknownError: An unknown error occured. Try the following things:"
             )
+            err()
 
 
 def settings():
     while True:
-        settings_path = os.path.dirname(os.path.abspath(__file__)) + "/texts/settings.txt"
+        settings_path = (
+            os.path.dirname(os.path.abspath(__file__)) + "/texts/settings.txt"
+        )
         settings = open(settings_path, mode="r")
 
         for line in settings.readlines():
@@ -785,12 +899,12 @@ def settings():
                 nprint("[gold1]" + line + " [/gold1]")
             else:
                 nprint(line)
-        nprint("\n[bold green](Current Screen: Settings Screen)[/bold green]\n")
+        print("\n[bold green](Current Screen: Settings Screen)[/bold green]\n")
         print("[bright_magenta]Enter Command: [/bright_magenta]", end="")
         cmd = input()
 
         if cmd == "print":
-            nprint(
+            print(
                 "\n[bold bright_green](Current Screen: Print Settings Screen)[/bold bright_green]\n"
             )
 
@@ -798,10 +912,10 @@ def settings():
             print_option = input(
                 'Set print mode: "p" (Sympy Pretty Print) or "n" (Normal Print): '
             )
-            nprint(f'\nPrinting mode set to: "{print_option}"')
+            print(f'\nPrinting mode set to: "{print_option}"')
 
         elif cmd == "graph":
-            nprint(
+            print(
                 "\n[bold bright_green](Current Screen: Graph Settings Screen)[/bold bright_green]\n"
             )
 
@@ -809,10 +923,10 @@ def settings():
             graph_option = input(
                 'Set graph mode: "f" (Fixed graph view) or "a" (Adjusted graph view): '
             )
-            nprint(f'\nGraph mode set to: "{graph_option}"')
+            print(f'\nGraph mode set to: "{graph_option}"')
 
         elif cmd == "date":
-            nprint(
+            print(
                 "\n[bold bright_green](Current Screen: Date Settings Screen)[/bold bright_green]\n"
             )
 
@@ -820,10 +934,27 @@ def settings():
             date_option = input(
                 'Set date mode: "1" (YY/MM/DD) or "2" (YY/MM/DD/HH/MM/SS): '
             )
-            nprint(f'\nDate mode set to: "{date_option}"')
+            print(f'\nDate mode set to: "{date_option}"')
+
+        elif cmd == "style":
+            print(
+                "\n[bold bright_green](Current Screen: Graph Style Settings Screen)[/bold bright_green]\n"
+            )
+
+            print("You currently have these available styles:\n")
+
+            style_list = plt.style.available
+            styles = ", ".join(style_list)
+            nprint("[bright_yellow]" + styles + " [/bright_yellow]")
+
+            style = input('\nChoose a style to apply (type "default" to reset): ')
+
+            plt.style.use(style)
+
+            print(f'Graph style set to "{style}".')
 
         elif cmd == "exit":
-            nprint("\n[bright_yellow]Exiting settings ... ... ...[/bright_yellow]")
+            print("\n[bright_yellow]Exiting settings ... ... ...[/bright_yellow]")
             break
 
         else:

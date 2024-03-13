@@ -1,6 +1,6 @@
 # calc-ultra
 
-[![GPLv3 License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.3.1-blue.svg)](https://github.com/sudoer-Huatao/Calc-ULTRA_Calculus-Calculator)
+[![GPLv3 License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.3.2-blue.svg)](https://github.com/sudoer-Huatao/Calc-ULTRA_Calculus-Calculator)
 
 > **Calculus made easy**
 
@@ -20,18 +20,15 @@ Supports:
 - Limits
 - One-sided limits
 
-**NEW SINCE V1.2.1:** Graphs for differentiation and integrals are supported!
-
 ## Note
 
-This is the module package of the Calc-ULTRA calculator. For the Python script of this package, visit <https://github.com/sudoer-Huatao/Calc-ULTRA>
+This is the module package of the Calc-ULTRA calculator. For the Python script of this package, visit <https://github.com/sudoer-Huatao/Calc-ULTRA> (unmaintained).
 
 ## Installation and Running
 
 > Run the calculus calculator with a single line of code
 
 Command line: `pip3 install calc-ultra`.
-
 Due to Python import identifiers restrictions, please import Calc-ULTRA as "calc_ultra" and not "calc-ultra" when you need to use the calculator.
 
 To run the calculator, import Calc-ULTRA as `calc_ultra` like so:
@@ -42,13 +39,13 @@ Make sure you have the latest version installed. To update calc-ultra, run `pip3
 
 ## Requirements
 
-This program requires the `sympy`,  `numpy`, `rich`, and `matplotlib` modules installed. Other required modules are built in to most Python IDEs.
+This program requires the `sympy`,  `numpy`, `rich`, `matplotlib`, and `scipy` modules installed. Other required modules are built in to most Python IDEs.
 
 ## Warnings
 
 ### Function limitations
 
-Due to limitations of the SymPy module, **some functions cannot be integrated**. The Error Function `erf(x)` can be integrated in both indefinite integral and definite integral calculation, but the Absolute Value and Factorial functions are only available to definite integral calculations. Also, the factorial function cannot be graphed properly. Integration of composed functions are also limited due to SymPy limitations. While some composed functions work, others don't. 😟
+Due to limitations of the SymPy module, **some functions cannot be integrated**. The Error Function `erf(x)` can be integrated in both indefinite integral and definite integral calculation, but the Absolute Value and Factorial functions are only available to definite integral calculations. Integration of composed functions are also limited due to SymPy limitations. While some composed functions work, others don't. 😟
 
 ## Test PYPI
 
