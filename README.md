@@ -1,8 +1,10 @@
 # calc-ultra
 
-[![GPLv3 License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.3.2-blue.svg)](https://github.com/sudoer-Huatao/Calc-ULTRA_Calculus-Calculator)
+[![GPLv3 License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.3.3-blue.svg)](https://github.com/sudoer-Huatao/Calc-ULTRA_Calculus-Calculator)
 
 > **Calculus made easy**
+
+(Turn on dark mode for a better aesthetic)
 
 The Calc-ULTRA calculus calculator, but as a module!
 
@@ -10,19 +12,20 @@ The Calc-ULTRA calculus calculator, but as a module!
 
 Supports:
 
-- Simple calculations
 - Derivatives
 - Partials
 - Implicit differentiation
 - Antiderivatives
 - Definite integrals
 - Improper integrals
-- Limits
-- One-sided limits
+- Double integrals
+- Solving (sets) of equation(s)
+- Vector/matrix operations
+- **A perfect interface to do calculations!**  
 
 ## Note
 
-This is the module package of the Calc-ULTRA calculator. For the Python script of this package, visit <https://github.com/sudoer-Huatao/Calc-ULTRA> (unmaintained).
+This is the module package of the Calc-ULTRA calculator. For the Python script of this package, visit <https://github.com/sudoer-Huatao/Calc-ULTRA> (**unmaintained**).
 
 ## Installation and Running
 
@@ -58,21 +61,30 @@ Previous test versions of this project are on Test PYPI. View on <https://test.p
 A general thank-you to all GitHub users who gave feedback and/or starred this repository. ⭐️
 And... a SPECIAL THANK-YOU to @Haobot for troubleshooting and feedback! 👍❤️
 
-This program was made using SymPy for calculation and Matplotlib and NumPy for graphing.
+This program was made using SymPy and Scipy for calculation and Matplotlib and NumPy for graphing.
 
 ## Gallery
 
 DerivaCalc derivative with graph demo:
-![derivacalc_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/2cac3688-d1da-4b73-b121-b6a2c7cf471c "derivacalc_demo")
+![derivacalc_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/22f7f674-81b4-4e5f-9bff-586d94c1976f "derivacalc_demo")
 
 InteCalc antiderivative with graph demo:
-![intecalc_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/bcfea09c-078f-4344-9ff0-91a414614244 "intecalc_demo")
+![intecalc_demo_1](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/1035a5af-cf04-46c1-b2e3-ec5eff08c58d "intecalc_demo_1")
 
 InteCalc definite integral with graph demo:
-![intecalc_graph_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/573e1b76-98f8-492a-845a-721f8d7ccd63 "intecalc_graph_demo")
+![intecalc_demo_2](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/42a127af-17f6-4608-a6aa-9029cf00e973 "intecalc_demo_2")
 
 LimCalc limit demo:
-![limcalc_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/c1069e1c-27ef-4b7a-b68b-49432ed31e5f "limcalc_demo")
+![limcalc_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/bb08db05-9b1b-4204-9d98-d4a3baa2167d "limcalc_demo")
+
+AlgCalc equation solver demo:
+![algcalc_demo_1](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/7d2bdad0-572c-4eec-8644-2837a0689154 "algcalc_demo_1")
+
+AlgCalc vector operation demo:
+![algcalc_demo_2](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/28c5143b-93fc-4165-b8d9-572d1ab00da8 "algcalc_demo_2")
+
+AlgCalc matrix operation demo:
+![algcalc_demo_3](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/b6d11f38-b5b8-42ed-b4b3-664c65207664 "algcalc_demo_3")
 
 ## License
 
