@@ -18,7 +18,7 @@ Calc-ULTRA supports:
  - Trigonometric functions;
  - Exponents (for base e, input as "exp(x)");
  - The Natural Logarithm (input as "log(x)");
- - Inverse Trigonometric Functions (input as "a" followed with trig function, e.g. asin);
+ - Inverse Trigonometric Functions (input as "a" followed by a trig function, e.g. asin);
  - Hyperbolic Functions and Inverse Hyperbolic Functions;
  - Other Functions such as the Factorial factorial(x), the Error Function erf(x) and more!
 
