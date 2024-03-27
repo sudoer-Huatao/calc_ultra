@@ -24,10 +24,10 @@ Calc-ULTRA supports:
 
 Commands:
 
---> 1: Open DerivaCalc
---> 2: Open InteCalc
---> 3: Open LimCalc
---> 4: Open basic calculation interface
---> 5: Open calculator settings
---> 6: Quit Calc-ULTRA
-
+--> 1: Open basic calculation interface
+--> 2: Open DerivaCalc
+--> 3: Open InteCalc
+--> 4: Open LimCalc
+--> 5: Open Algcalc
+--> 6: Open calculator settings
+--> 7: Quit Calc-ULTRA
