@@ -20,7 +20,10 @@ from numpy import (
     arcsinh,
     arccosh,
     arctanh,
+    array,
+    cross,
 )
+from numpy.linalg import norm, det
 import numpy as np
 
 # Sympy uses symbolic Pi and e, which cannot be graphed by matplotlib
@@ -31,6 +34,8 @@ from sympy import (
     Integral,
     integrate,
     limit,
+    solve,
+    linsolve,
     pprint,
     simplify,
     symbols,
@@ -55,7 +60,7 @@ def simp():
         try:
             if expr != "q":
                 # Easy to exit unlike VIM ;)
-                print("\nResult:")
+                print("\n[bright_yellow]Result: [/bright_yellow]", end="")
                 if "pi" in expr:
                     expr = expr.replace("pi", str(np.pi))
 
@@ -355,10 +360,19 @@ def improp_int(function, low, up):
         else:
             print("Cannot compute improper integral.")
 
-        print()
-
     except ValueError:
-        logging.warning("ValueError: Singularity while computing improper integral.\n")
+        improper_area = integrate(function, (x, low, up))
+
+        if "Integral" not in str(improper_area):
+            print(
+                f"\nCalculated improper integral of [bright_magenta]{function}[/bright_magenta] from {low} to {up}. Final area is:\n"
+            )
+            print_expr(improper_area)
+
+        else:
+            print("Cannot compute improper integral.")
+
+    print()
 
 
 def double_int(function, out_low, out_up, in_low, in_up):
@@ -466,6 +480,62 @@ def side_lim(expr, value, direction):
         f"\nLimit of [bright_magenta]{expr}[/bright_magenta] as x approaches {value} from the [bright_cyan]{direction}[/bright_cyan] is:\n"
     )
     print_expr(l)
+
+
+def eq_solve(mode):
+    eq_list = []
+
+    if mode == "1":
+        eq1 = input("\nEnter equation: ")
+        left = eval(eq1[: eq1.find("=")])
+        right = eval(eq1[eq1.find("=") + 1 :])
+        eq_set = solve(left - right)[0]
+        print("\nx:\n")
+        pprint(eq_set)
+
+    elif mode == "2":
+        eq1 = input("Enter first equation: ")
+        left1 = eval(eq1[: eq1.find("=")])
+        right1 = eval(eq1[eq1.find("=") + 1 :])
+
+        eq2 = input("Enter second equation: ")
+        left2 = eval(eq2[: eq2.find("=")])
+        right2 = eval(eq2[eq2.find("=") + 1 :])
+
+        eq_set = str(linsolve((left1 - right1, left2 - right2), (x, y), (-1, 1)))
+        eqs = eq_set.strip("{").strip("}").strip("(").strip(")")
+        for value in eqs:
+            eq_list.append(value)
+
+        result = "".join(eq_list)
+        print("\nx, y:\n")
+        pprint(result)
+
+    elif mode == "3":
+        eq1 = input("Enter equation 1: ")
+        left1 = eval(eq1[: eq1.find("=")])
+        right1 = eval(eq1[eq1.find("=") + 1 :])
+
+        eq2 = input("Enter equation 2: ")
+        left2 = eval(eq2[: eq2.find("=")])
+        right2 = eval(eq2[eq2.find("=") + 1 :])
+
+        eq3 = input("Enter equation 3: ")
+        left3 = eval(eq3[: eq3.find("=")])
+        right3 = eval(eq3[eq3.find("=") + 1 :])
+
+        eq_set = str(
+            linsolve(
+                (left1 - right1, left2 - right2, left3 - right3), (x, y, z), (-1, 1)
+            )
+        )
+        eqs = eq_set.strip("{").strip("}").strip("(").strip(")")
+        for value in eqs:
+            eq_list.append(value)
+
+        result = "".join(eq_list)
+        print("\nx, y, z:\n")
+        pprint(result)
 
 
 def check_simp(expr):
@@ -674,21 +744,24 @@ def main():
         cmd = input()
 
         if cmd == "1":
-            derivacalc()
-
-        elif cmd == "2":
-            intecalc()
-
-        elif cmd == "3":
-            limcalc()
-
-        elif cmd == "4":
             simp()
 
+        elif cmd == "2":
+            derivacalc()
+
+        elif cmd == "3":
+            intecalc()
+
+        elif cmd == "4":
+            limcalc()
+
         elif cmd == "5":
-            settings()
+            algcalc()
 
         elif cmd == "6":
+            settings()
+
+        elif cmd == "7":
             nprint("\n[bright_yellow]Exiting Calc-ULTRA ... ... ...[/bright_yellow]\n")
             break
 
@@ -874,6 +947,127 @@ def limcalc():
 
             elif cmd == "3":
                 print("\n[bright_yellow]Exiting LimCalc ... ... ...[/bright_yellow]")
+                break
+
+            else:
+                logging.warning(f'Invalid command: "{cmd}"')
+
+        except:
+            logging.error(
+                "UnknownError: An unknown error occured. Try the following things:"
+            )
+            err()
+
+
+def algcalc():
+    instruct_path = os.path.dirname(os.path.abspath(__file__)) + "/texts/algcalc.txt"
+    algcalc = open(instruct_path, mode="r")
+    for line in algcalc.readlines():
+        line = line.rstrip()
+        if ("---" in line) or ("|" in line):
+            nprint("[gold1]" + line + " [/gold1]")
+        else:
+            nprint(line)
+    print()
+
+    while True:
+        try:
+            nprint(
+                "\n[bold bright_green](Current Screen: AlgCalc Main Screen)[/bold bright_green]\n"
+            )
+            print("[purple]Enter Command: [/purple]", end="")
+            cmd = input()
+
+            if cmd == "1":
+                nprint(
+                    "\n[bold bright_green](Current screen: Equation Solver Screen)[/bold bright_green]\n"
+                )
+                print(
+                    "Enter mode: 1 for one set equation, 2 for two, and 3 for three: ",
+                    end="",
+                )
+                mode = input()
+                eq_solve(mode)
+
+            elif cmd == "2":
+                nprint(
+                    "\n[bold bright_green](Current screen: Vector Calculation Screen)[/bold bright_green]\n"
+                )
+
+                print("Write a vector like [1, 2, 3], then perform operations!")
+                print(
+                    "\n- Use [bright_magenta]@[/bright_magenta] to calculate the dot product"
+                )
+                print("- cross(smth, smth) to calculate the cross product")
+                print(
+                    "- A pair of [bright_magenta]< >[/bright_magenta]s encasing a vector to calculate it's norm!"
+                )
+                print('Enter any expression to start ("q" to quit):\n')
+
+                while True:
+                    expr = input()
+                    try:
+                        if expr != "q":
+                            expr = (
+                                (
+                                    (
+                                        (expr.replace("[", "array([")).replace(
+                                            "]", "])"
+                                        )
+                                    ).replace("<", "norm(")
+                                ).replace(">", ")")
+                            ).strip(" ")
+                            result = eval(trig_rep(expr))
+                            print("\n[bright_yellow]Result: [/bright_yellow]", end="")
+                            pprint(result)
+                            print()
+
+                        else:
+                            break
+                    except:
+                        logging.error(f'Could not parse: "{expr}"\n')
+
+                print()
+
+            elif cmd == "3":
+                nprint(
+                    "\n[bold bright_green](Current screen: Matrix Calculation Screen)[/bold bright_green]\n"
+                )
+
+                print("Write a matrix like [[1, 2], [3, 4]], then perform operations!")
+                print(
+                    "- Use [bright_magenta]@[/bright_magenta] to calculate the dot product"
+                )
+                print(
+                    "- A pair of [bright_magenta]| |[/bright_magenta] to calculate the determinant."
+                )
+                print('Enter any expression to start ("q" to quit):\n')
+
+                while True:
+                    expr = input()
+                    try:
+                        if expr != "q":
+                            expr = (
+                                (
+                                    (
+                                        (expr.replace("[[", "array([[")).replace(
+                                            "]]", "]])"
+                                        )
+                                    ).replace("|a", "det(a")
+                                ).replace(")|", "))")
+                            ).strip(" ")
+                            result = eval(trig_rep(expr))
+                            print("\n[bright_yellow]Result: [/bright_yellow]\n")
+                            pprint(result)
+                            print()
+
+                        else:
+                            break
+                    except:
+                        logging.error(f'Could not parse: "{expr}"\n')
+
+            elif cmd == "4":
+                print("\n[bright_yellow]Exiting AlgCalc ... ... ...[/bright_yellow]")
                 break
 
             else:
