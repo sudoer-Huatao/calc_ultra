@@ -1007,7 +1007,7 @@ def algcalc():
                     "Enter mode: 1 for one set equation, 2 for two, and 3 for three: ",
                     end="",
                 )
-                mode = input()
+                mode = int(input())
                 eq_solve(mode)
 
             elif cmd == "2":
