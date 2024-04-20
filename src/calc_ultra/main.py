@@ -1,7 +1,16 @@
 from sympy.core.numbers import pi, E, oo
 from math import floor, ceil
+import math as mt
 from scipy.special import gamma, polygamma, erf
 from rich import print
+from rich.progress import (
+    Progress,
+    SpinnerColumn,
+    BarColumn,
+    MofNCompleteColumn,
+    TimeElapsedColumn,
+    TextColumn,
+)
 from numpy import (
     linspace,
     exp,
@@ -20,7 +29,10 @@ from numpy import (
     arcsinh,
     arccosh,
     arctanh,
+    array,
+    cross,
 )
+from numpy.linalg import norm, det
 import numpy as np
 
 # Sympy uses symbolic Pi and e, which cannot be graphed by matplotlib
@@ -31,12 +43,14 @@ from sympy import (
     Integral,
     integrate,
     limit,
+    solve,
+    linsolve,
     pprint,
     simplify,
     symbols,
 )
 import matplotlib.pyplot as plt
-import datetime, logging, os, time, warnings
+import datetime, logging, random, os, time, warnings
 
 
 # Disable auto Python warnings
@@ -55,11 +69,8 @@ def simp():
         try:
             if expr != "q":
                 # Easy to exit unlike VIM ;)
-                print("\nResult:")
-                if "pi" in expr:
-                    expr = expr.replace("pi", str(np.pi))
-
-                result = eval(replace_bound(expr))
+                result = eval(trig_rep(expr))
+                print("\n[bright_yellow]Result: [/bright_yellow]", end="")
                 pprint(result)
                 print()
 
@@ -67,24 +78,23 @@ def simp():
                 break
 
         except:
+            print()
             logging.error(f'Could not parse: "{expr}"\n')
 
 
-def derive(function, order):
-    function = replace_expr(function)
+def derive(function: str, order: str):
+    calc = replace_expr(function)
 
     if check_order(order) is True:
         global df
-        df = diff(function, x, order)
+        df = diff(calc, x, order)
 
-        nprint(
-            f"\nDerivative of [bright_magenta]{function}[/bright_magenta] with order {order} is:\n"
+        print(
+            f"\nDerivative of [bright_magenta]{trig_rep(function)}[/bright_magenta] with order {order} is:\n"
         )
         print_expr(df)
 
-        if check_simp(df) is True:
-            nprint("\nSimplify/rewrite:\n")
-            print_expr(simplify(df, evaluate=False))
+        check_simp(df)
 
         df = trig_rep(str(df))
 
@@ -93,10 +103,27 @@ def derive(function, order):
 
         if show == "y":
             try:
-                print(
-                    "\n[bright_yellow]Loading graph. Might take some time on first startup ...[/bright_yellow]"
-                )
+                print()
+                with Progress(
+                    SpinnerColumn(finished_text="[bright_green]√[/bright_green]"),
+                    TextColumn("[bright_yellow]Loading graph...[/bright_yellow]"),
+                    BarColumn(),
+                    TimeElapsedColumn(),
+                    transient=False,
+                ) as progress:
+                    task = progress.add_task("", total=100)
+
+                    while not progress.finished:
+                        progress.update(task, advance=2)
+                        time.sleep(random.randint(2, 5) / 1000)
+
                 x_array = linspace(-50, 50, 200000)
+
+                def f(x):
+                    return eval(trig_rep(calc))
+
+                def dif(x):
+                    return eval(df)
 
                 title = "Function (red) and derivative (blue)"
                 plt.title(title)
@@ -113,31 +140,32 @@ def derive(function, order):
 
             except:
                 plt.close()
+                print("\n")
                 logging.warning("Could not graph function.")
                 print("\nExited graph.")
 
 
-def partial_derive(function, var, order):
-    function = replace_expr(function)
+def partial_derive(function: str, var: str, order: str):
+    calc = replace_expr(function)
 
     if check_order(order) is True:
-        df = diff(function, var, order)
+        df = diff(calc, var, order)
 
         print(
-            f"\nPartial derivative of [bright_magenta]{function}[/bright_magenta] in respect to {var} of order {order} is:\n"
+            f"\nPartial derivative of [bright_magenta]{trig_rep(function)}[/bright_magenta] in respect to {var} of order {order} is:\n"
         )
         print_expr(df)
 
-        if check_simp(df) is True:
-            print("\nSimplify/rewrite:\n")
-            print_expr(simplify(df, evaluate=False))
+        check_simp(df)
 
 
-def implicit_derive(circ, order):
-    circ = replace_expr(circ)
+def implicit_derive(circ: str, order: str):
+    calc = replace_expr(circ)
+    left = eval(calc[: calc.find("=")])
+    right = eval(calc[calc.find("=") + 1 :])
 
     if check_order(order) is True:
-        df = idiff(eval(circ), y, x, int(order))
+        df = idiff(left - right, y, x, order)
 
         print(
             f"\nDerivative of [bright_magenta]{circ}[/bright_magenta] with order {order} is:\n"
@@ -149,22 +177,20 @@ def implicit_derive(circ, order):
             print_expr(simplify(df, evaluate=False))
 
 
-def antiderive(function):
-    function = replace_expr(function)
-
-    global F
-    F = Integral(function, x).doit()
+def antiderive(function: str):
+    calc = replace_expr(function)
+    F = Integral(calc, x).doit()
 
     if "Integral" in str(F):
         logging.warning("Cannot compute integral.\n")
         return ""
 
-    print(f"\nAntiderivative of [bright_magenta]{function}[/bright_magenta] is:\n")
+    print(
+        f"\nAntiderivative of [bright_magenta]{trig_rep(function)}[/bright_magenta] is:\n"
+    )
     print_expr(F)
 
-    if check_simp(F) is True:
-        print("\nSimplify/rewrite:\n")
-        print_expr(simplify(F, evaluate=False))
+    check_simp(F)
 
     F = trig_rep(str(F))
 
@@ -175,11 +201,27 @@ def antiderive(function):
 
     if show == "y":
         try:
-            print(
-                "\n[bright_yellow]Loading graph. Might take some time on first startup ...[/bright_yellow]"
-            )
+            print()
+            with Progress(
+                SpinnerColumn(finished_text="[bright_green]√[/bright_green]"),
+                TextColumn("[bright_yellow]Loading graph...[/bright_yellow]"),
+                BarColumn(),
+                TimeElapsedColumn(),
+                transient=False,
+            ) as progress:
+                task = progress.add_task("", total=100)
+
+                while not progress.finished:
+                    progress.update(task, advance=2)
+                    time.sleep(random.randint(2, 5) / 1000)
 
             x_array = linspace(-100, 100, 200000)
+
+            def f(x):
+                return eval(trig_rep(calc))
+
+            def af(x):
+                return eval(F)
 
             title = "Function (red) and antiderivative (blue, C = 0)"
             plt.title(title)
@@ -197,30 +239,29 @@ def antiderive(function):
 
         except:
             plt.close()
+            print("\n")
             logging.warning("Could not graph function.")
             print("\nExited graph.\n")
 
 
-def def_int(function, low, up):
+def def_int(function: str, low: str, up: str):
     x = symbols("x")
-    function = replace_expr(function)
+    calc = replace_expr(function)
 
-    if check_bound(low) is False:
-        return ""
+    check_bound(low)
 
-    low = eval(low)
+    clow = eval(replace_expr(low))
 
-    if check_bound(up) is False:
-        return ""
+    check_bound(up)
 
-    up = eval(up)
+    cup = eval(replace_expr(up))
 
-    result = integrate(function, (x, low, up))
+    result = integrate(calc, (x, clow, cup))
 
-    up = eval(replace_bound(str(up)))
-    low = eval(replace_bound(str(low)))
+    gup = eval(replace_bound(str(cup)))
+    glow = eval(replace_bound(str(clow)))
 
-    num_result = integrate(function, (x, low, up)).evalf()
+    num_result = integrate(calc, (x, glow, gup)).evalf()
     # Composite functions usually do not have primitive antiderivatives
     # so calc-ultra is equipped with both symbolic and numerical answers.
 
@@ -234,7 +275,7 @@ def def_int(function, low, up):
 
     if "Integral" not in str(result):
         print(
-            f"\nCalculated integral of [bright_magenta]{function}[/bright_magenta] from {low} to {up}. Final area is:\n"
+            f"\nCalculated integral of [bright_magenta]{trig_rep(function)}[/bright_magenta] from {low} to {up}. Final area is:\n"
         )
         print_expr(result)
 
@@ -250,9 +291,19 @@ def def_int(function, low, up):
 
     if show == "y":
         try:
-            print(
-                "\n[bright_yellow]Loading graph. Might take some time on first startup ...[/bright_yellow]"
-            )
+            print()
+            with Progress(
+                SpinnerColumn(finished_text="[bright_green]√[/bright_green]"),
+                TextColumn("[bright_yellow]Loading graph...[/bright_yellow]"),
+                BarColumn(),
+                TimeElapsedColumn(),
+                transient=False,
+            ) as progress:
+                task = progress.add_task("", total=100)
+
+                while not progress.finished:
+                    progress.update(task, advance=2)
+                    time.sleep(random.randint(2, 5) / 1000)
 
             x_array = linspace(-100, 100, 200000)
 
@@ -273,6 +324,9 @@ def def_int(function, low, up):
             # This is just the gamma function shifted one unit left
             # Of course, the factorial is only defined for x >= 0
 
+            def f(x):
+                return eval(trig_rep(calc))
+
             title = "Shaded area beneath function"
             plt.title(title)
             plt.xlabel("x", weight="bold")
@@ -282,7 +336,7 @@ def def_int(function, low, up):
             plt.fill_between(
                 x_array,
                 f(x_array),
-                where=[(x_array > low) and (x_array < up) for x_array in x_array],
+                where=[(x_array > clow) and (x_array < cup) for x_array in x_array],
                 color="blue",
             )
 
@@ -293,22 +347,24 @@ def def_int(function, low, up):
                 elif graph_option == "a":
                     # Adjusted graph view is sometimes better for
                     # large graphs with large bounds.
-                    if (float(f(low)) != 0) and (float(f(up)) != 0):
+                    if (float(f(glow)) != 0) and (float(f(gup)) != 0):
                         plt.axis(
                             [
-                                low - 5,
-                                up + 5,
-                                float(f(round(low)))
-                                - (float(f(round(low))) + float(f(round(up)))) / 2
+                                glow - 5,
+                                gup + 5,
+                                float(f(round(glow)))
+                                - (float(f(round(glow))) + float(f(round(gup)))) / 2
                                 - 1,
-                                float(f(round(up)))
-                                + (float(f(round(low))) + float(f(round(up)))) / 2
+                                float(f(round(gup)))
+                                + (float(f(round(glow))) + float(f(round(gup)))) / 2
                                 + 1,
                             ]
                         )
 
-                    elif (float(f(low)) == 0) or (float(f(up)) == 0):
-                        plt.axis([low - 5, up + 5, -(up - low) / 2, (up + low) / 2])
+                    elif (float(f(glow)) == 0) or (float(f(gup)) == 0):
+                        plt.axis(
+                            [glow - 5, gup + 5, -(gup - glow) / 2, (gup + glow) / 2]
+                        )
 
             except:
                 plt.axis([-7.5, 7.5, -7.5, 7.5])
@@ -321,6 +377,7 @@ def def_int(function, low, up):
 
         except:
             plt.close()
+            print("\n")
             logging.warning("Could not graph function.")
             return "\nExited graph.\n"
 
@@ -328,22 +385,20 @@ def def_int(function, low, up):
         return "\n[bright_yellow]Exiting Definite Integral Screen ... ... ...[/bright_yellow]\n"
 
 
-def improp_int(function, low, up):
+def improp_int(function: str, low: str, up: str):
     function = replace_expr(function)
 
-    if check_bound(low) is False:
-        return ""
+    check_bound(low)
 
-    low = eval(low)
+    clow = eval(replace_expr(low))
 
-    if check_bound(up) is False:
-        return ""
+    check_bound(up)
 
-    up = eval(up)
+    cup = eval(replace_expr(up))
 
     try:
         improper_area = Integral(
-            function, (x, low, up)
+            function, (x, clow, cup)
         ).principal_value()  # Cauchy Principal Value
 
         if "Integral" not in str(improper_area):
@@ -355,28 +410,35 @@ def improp_int(function, low, up):
         else:
             print("Cannot compute improper integral.")
 
-        print()
-
     except ValueError:
-        logging.warning("ValueError: Singularity while computing improper integral.\n")
+        improper_area = integrate(function, (x, clow, cup))
+
+        if "Integral" not in str(improper_area):
+            print(
+                f"\nCalculated improper integral of [bright_magenta]{function}[/bright_magenta] from {low} to {up}. Final area is:\n"
+            )
+            print_expr(improper_area)
+
+        else:
+            print("Cannot compute improper integral.")
+
+    print()
 
 
-def double_int(function, out_low, out_up, in_low, in_up):
+def double_int(function: str, out_low: str, out_up: str, in_low: str, in_up: str):
     function = replace_expr(function)
 
-    if check_bound(out_low) is False:
-        return ""
+    check_bound(out_low)
 
-    out_low = eval(out_low)
+    out_low = eval(replace_expr(out_low))
 
-    if check_bound(out_up) is False:
-        return ""
+    check_bound(out_up)
 
-    out_up = eval(out_up)
+    out_up = eval(replace_expr(out_up))
 
-    in_low = eval(in_low)
+    in_low = eval(replace_expr(in_low))
 
-    in_up = eval(in_up)
+    in_up = eval(replace_expr(in_up))
 
     out_up = eval(replace_bound(str(out_up)))
     out_low = eval(replace_bound(str(out_low)))
@@ -395,19 +457,13 @@ def double_int(function, out_low, out_up, in_low, in_up):
     print_expr(result)
     print("")
 
-    if check_simp(result) is True:
-        print("\nSimplify/rewrite:\n")
-        print_expr(simplify(result, evaluate=False))
+    check_simp(result)
 
 
-def lim(expr, value):
-    if "pi" in expr:
-        expr = expr.replace("pi", str(pi))
+def lim(expr: str, value: str):
+    expr = replace_expr(expr)
 
-    replace_expr(expr)
-
-    if check_bound(value) is False:
-        return ""
+    check_bound(value)
 
     value = float(eval(replace_bound(value)))
 
@@ -430,29 +486,24 @@ def lim(expr, value):
             f"\nLimit of [bright_magenta]{expr}[/bright_magenta] as x approaches {value} is:\n"
         )
         print_expr(l)
-        if check_simp(l) is True:
-            print("\nSimplify/rewrite:\n")
-            print_expr(simplify(l, evaluate=False))
+        check_simp(l)
 
 
-def side_lim(expr, value, direction):
-    if "pi" in expr:
-        expr = expr.replace("pi", str(pi))
+def side_lim(expr: str, value: str, direction: str):
+    expr = replace_expr(expr)
 
-    replace_expr(expr)
-
-    if check_bound(value) is False:
-        return ""
+    check_bound(value)
 
     value = float(eval(replace_bound(value)))
 
-    if direction == "left":
+    if direction == "left" or direction == "Left":
         direction_sign = "-"
 
-    elif direction == "right":
+    elif direction == "right" or direction == "Right":
         direction_sign = "+"
 
     else:
+        print()
         logging.error("\nTypeError: Direction is neither right or left.")
         return ""
 
@@ -468,16 +519,80 @@ def side_lim(expr, value, direction):
     print_expr(l)
 
 
-def check_simp(expr):
+def eq_solve(mode: int):
+    eq_list = []
+
+    if mode == 1:
+        eq1 = input("\nEnter equation: ")
+        left = eval(eq1[: eq1.find("=")])
+        right = eval(eq1[eq1.find("=") + 1 :])
+        eq_set = solve(left - right)
+        if len(eq_set) == 0:
+            print()
+            logging.error("UnknownError: Cannot solve equation")
+        else:
+            print("\nx:\n")
+            for i in range(0, len(eq_set)):
+                pprint(eq_set[i])
+                print()
+
+    elif mode == 2:
+        eq1 = input("Enter first equation: ")
+        left1 = eval(eq1[: eq1.find("=")])
+        right1 = eval(eq1[eq1.find("=") + 1 :])
+
+        eq2 = input("Enter second equation: ")
+        left2 = eval(eq2[: eq2.find("=")])
+        right2 = eval(eq2[eq2.find("=") + 1 :])
+
+        eq_set = str(linsolve((left1 - right1, left2 - right2), (x, y), (-1, 1)))
+        eqs = eq_set.strip("{").strip("}").strip("(").strip(")")
+        for value in eqs:
+            eq_list.append(value)
+
+        result = "".join(eq_list)
+        print("\nx, y:\n")
+        pprint(result)
+
+    elif mode == 3:
+        eq1 = input("Enter equation 1: ")
+        left1 = eval(eq1[: eq1.find("=")])
+        right1 = eval(eq1[eq1.find("=") + 1 :])
+
+        eq2 = input("Enter equation 2: ")
+        left2 = eval(eq2[: eq2.find("=")])
+        right2 = eval(eq2[eq2.find("=") + 1 :])
+
+        eq3 = input("Enter equation 3: ")
+        left3 = eval(eq3[: eq3.find("=")])
+        right3 = eval(eq3[eq3.find("=") + 1 :])
+
+        eq_set = str(
+            linsolve(
+                (left1 - right1, left2 - right2, left3 - right3), (x, y, z), (-1, 1)
+            )
+        )
+        eqs = eq_set.strip("{").strip("}").strip("(").strip(")")
+        for value in eqs:
+            eq_list.append(value)
+
+        result = "".join(eq_list)
+        print("\nx, y, z:\n")
+        pprint(result)
+
+
+def check_simp(expr) -> bool:
     if str(simplify(expr, evaluate=False)) != str(expr):
-        return True
+        print("\nSimplify/rewrite:\n")
+        print_expr(simplify(expr, evaluate=False))
 
     else:
         return False
 
 
-def check_order(order):
-    if ("." in order) or (order.isnumeric() == False) or (int(order) <= 0):
+def check_order(order: str) -> bool:
+    if ("." in order) or (order.isnumeric() == False):
+        print()
         logging.error(
             "OrderError: Order of derivative calculation is not a valid number."
         )
@@ -487,10 +602,11 @@ def check_order(order):
         return True
 
 
-def check_bound(bound):
+def check_bound(bound: str):
     if (
         (bound.isnumeric() is False)
         and ("pi" not in bound)
+        and ("e" not in bound)
         and ("E" not in bound)
         and ("-" not in bound)
         and ("." not in bound)
@@ -498,74 +614,49 @@ def check_bound(bound):
         and ("oo" not in bound)
         and ("/" not in bound)
     ):
+        print()
         logging.error("TypeError: Integration bound is not a number.")
-        return False
-
-    else:
-        return True
 
 
-def replace_expr(expr):
+def replace_expr(expr: str) -> str:
+    expr = expr.strip(" ")
+
     if "^" in expr:
         expr = expr.replace("^", "**")
 
+    if "e" in expr:
+        expr = expr.replace("e", "E")
+
+    if "E**" in expr:
+        expr = expr.replace("E**", "exp")
+
+    if "ln" in expr:
+        expr = expr.replace("ln", "log")
+
     if "arc" in expr:
         expr = expr.replace("arc", "a")
-        print(
-            f'[bold bright_red]Showing results for "{expr}". (Did you make a mistake?)[/bold bright_red]'
-        )
+
+    if "abs" in expr:
+        expr = expr.replace("abs", "Abs")
 
     return expr
 
 
-def replace_bound(bound):
+def replace_bound(bound: str) -> str:
     if "pi" in bound:
-        bound = bound.replace("pi", str(pi.evalf()))
+        bound = bound.replace("pi", str(np.pi))
+
     if "E" in bound:
-        bound = bound.replace("E", str(E.evalf()))
+        bound = bound.replace("E", str(np.e))
 
     return bound
-
-
-def f(x):
-    if "Abs" in dfunction:
-        final = dfunction.replace("Abs", "fabs")
-    else:
-        final = dfunction
-
-    if "x" not in final:
-        final = "0 * x + " + final
-
-    final = eval(trig_rep(final))
-
-    return final
-
-
-def dif(x):
-    if "x" not in str(df):
-        final = eval("0 * x + " + trig_rep(str(df)))
-
-    else:
-        final = eval(df)
-
-    return final
-
-
-def af(x):
-    if "x" not in F:
-        final = eval("0 * x + " + F)
-
-    else:
-        final = eval(F)
-
-    return final
 
 
 def factorial(x):
     return gamma(x + 1)
 
 
-def trig_rep(function):
+def trig_rep(function: str) -> str:
     # Sympy and Numpy trig functions are vastly different
     # and uses different prefixes. Thus this replacement
     # algorithm is needed.
@@ -608,16 +699,19 @@ def trig_rep(function):
     if "coth" in function:
         function = function.replace("coth", "1/tanh")
 
-    if "pi" in function:
-        function = function.replace("pi", str(np.pi))
+    if "Abs" in function:
+        function = function.replace("Abs", "fabs")
 
-    if "E" in function:
-        function = function.replace("E", str(np.e))
+    if "log" in function and ",x)" in function:
+        function = function.replace("log", "mt.log")
+
+    if "x" not in function:
+        function = "0 * x + " + function
 
     return function
 
 
-def print_expr(text):
+def print_expr(text: str):
     printing_methods = {"p": lambda t: pprint(text), "n": lambda t: print(text)}
 
     try:
@@ -627,22 +721,26 @@ def print_expr(text):
         printing_methods["p"](text)
 
 
-def err():
-    nprint(
-        "\n[bold bright_red]Check if your input is valid. You might have made the following mistakes:[/bold bright_red]"
-    )
-    nprint(
-        '[bold bright_red] - Inverse trigs: "arc" instead of "a". "asin(x)" is correct, "arcsin(x)" is not.[/bold bright_red]'
-    )
-    nprint('[bold bright_red] - Base of log: "e" instead of "E".[/bold bright_red]\n')
-
-
-def nprint(text):
+def nprint(text: str):
     print(text)
     time.sleep(0.04)
 
 
 def main():
+    with Progress(
+        SpinnerColumn(finished_text="[bright_green]√[/bright_green]"),
+        TextColumn("[green]Handling imports[/green]..."),
+        BarColumn(),
+        MofNCompleteColumn(),
+        TimeElapsedColumn(),
+        transient=False,
+    ) as progress:
+        task = progress.add_task("", total=50)
+
+        while not progress.finished:
+            progress.update(task, advance=1)
+            time.sleep(random.randint(2, 5) / 100)
+
     global x, y, z
     x, y, z = symbols("x, y, z")
 
@@ -674,21 +772,24 @@ def main():
         cmd = input()
 
         if cmd == "1":
-            derivacalc()
-
-        elif cmd == "2":
-            intecalc()
-
-        elif cmd == "3":
-            limcalc()
-
-        elif cmd == "4":
             simp()
 
+        elif cmd == "2":
+            derivacalc()
+
+        elif cmd == "3":
+            intecalc()
+
+        elif cmd == "4":
+            limcalc()
+
         elif cmd == "5":
-            settings()
+            algcalc()
 
         elif cmd == "6":
+            settings()
+
+        elif cmd == "7":
             nprint("\n[bright_yellow]Exiting Calc-ULTRA ... ... ...[/bright_yellow]\n")
             break
 
@@ -724,10 +825,9 @@ def derivacalc():
                 nprint(
                     "\n[bold bright_green](Current Screen: Derivative Screen)[/bold bright_green]\n"
                 )
-                global dfunction
-                dfunction = input("Enter a function: ")
+                function = input("Enter a function: ")
                 order = input("Enter order of derivative calculation: ")
-                derive(dfunction, order)
+                derive(function, order)
 
             elif cmd == "2":
                 nprint(
@@ -738,9 +838,8 @@ def derivacalc():
                 )
                 var = input("Enter variable to differentiate in respect to: ")
                 if var != "x" and var != "y" and var != "z":
-                    logging.error(
-                        "[bold bright_red]Variable to differentite in respect to is invalid.[/bold bright_red]"
-                    )
+                    print()
+                    logging.error("Variable to differentite in respect to is invalid.")
                 else:
                     order = input("Enter the order of partial derivative calculation: ")
                     partial_derive(function, var, order)
@@ -749,9 +848,7 @@ def derivacalc():
                 nprint(
                     "\n[bold bright_green](Current Screen: Implicit Derivative Screen)[/bold bright_green]\n"
                 )
-                circ = input(
-                    "Enter the left side of an equation containing x and y: (right side default as 0) "
-                )
+                circ = input("Enter an equation containing x and y:")
                 order = input("Enter order of implicit derivative calculation: ")
                 implicit_derive(circ, order)
 
@@ -762,13 +859,12 @@ def derivacalc():
             else:
                 logging.warning(f'Invalid command:"{cmd}"')
         except:
+            print("\n")
             logging.error("UnknownError: An unknown error occured.")
-            err()
+            nprint("[bold bright_red]Check if your input is valid.[/bold bright_red]\n")
 
 
 def intecalc():
-    global dfunction
-
     instruct_path = os.path.dirname(os.path.abspath(__file__)) + "/texts/intecalc.txt"
     intecalc = open(instruct_path, mode="r")
     for line in intecalc.readlines():
@@ -791,17 +887,17 @@ def intecalc():
                 nprint(
                     "\n[bold bright_green](Current Screen: Antiderivative Screen)[/bold bright_green]\n"
                 )
-                dfunction = input("Enter a function: ")
-                antiderive(dfunction)
+                function = input("Enter a function: ")
+                antiderive(function)
 
             elif cmd == "2":
                 nprint(
                     "\n[bold bright_green](Current Screen: Definite Integral Screen)[/bold bright_green]\n"
                 )
-                dfunction = input("Enter a function: ")
+                function = input("Enter a function: ")
                 lower_bound = input("\nEnter the lower bound: ")
                 upper_bound = input("Enter the upper bound: ")
-                print(def_int(dfunction, lower_bound, upper_bound))
+                print(def_int(function, lower_bound, upper_bound))
 
             elif cmd == "3":
                 nprint(
@@ -830,10 +926,9 @@ def intecalc():
             else:
                 logging.warning(f'Invalid command: "{cmd}"')
         except:
-            logging.error(
-                "UnknownError: An unknown error occured. Try the following things:"
-            )
-            err()
+            print("\n")
+            logging.error("UnknownError: An unknown error occured.")
+            nprint("[bold bright_red]Check if your input is valid.[/bold bright_red]\n")
 
 
 def limcalc():
@@ -880,10 +975,130 @@ def limcalc():
                 logging.warning(f'Invalid command: "{cmd}"')
 
         except:
-            logging.error(
-                "UnknownError: An unknown error occured. Try the following things:"
+            print("\n")
+            logging.error("UnknownError: An unknown error occured.")
+            nprint("[bold bright_red]Check if your input is valid.[/bold bright_red]\n")
+
+
+def algcalc():
+    instruct_path = os.path.dirname(os.path.abspath(__file__)) + "/texts/algcalc.txt"
+    algcalc = open(instruct_path, mode="r")
+    for line in algcalc.readlines():
+        line = line.rstrip()
+        if ("---" in line) or ("|" in line):
+            nprint("[gold1]" + line + " [/gold1]")
+        else:
+            nprint(line)
+    print()
+
+    while True:
+        try:
+            nprint(
+                "\n[bold bright_green](Current Screen: AlgCalc Main Screen)[/bold bright_green]\n"
             )
-            err()
+            print("[purple]Enter Command: [/purple]", end="")
+            cmd = input()
+
+            if cmd == "1":
+                nprint(
+                    "\n[bold bright_green](Current screen: Equation Solver Screen)[/bold bright_green]\n"
+                )
+                print(
+                    "Enter mode: 1 for one set equation, 2 for two, and 3 for three: ",
+                    end="",
+                )
+                mode = int(input())
+                eq_solve(mode)
+
+            elif cmd == "2":
+                nprint(
+                    "\n[bold bright_green](Current screen: Vector Calculation Screen)[/bold bright_green]\n"
+                )
+
+                print("Write a vector like [1, 2, 3], then perform operations!")
+                print(
+                    "\n- Use [bright_magenta]@[/bright_magenta] to calculate the dot product"
+                )
+                print("- cross(smth, smth) to calculate the cross product")
+                print(
+                    "- A pair of [bright_magenta]< >[/bright_magenta]s encasing a vector to calculate it's norm!"
+                )
+                print('Enter any expression to start ("q" to quit):\n')
+
+                while True:
+                    expr = input()
+                    try:
+                        if expr != "q":
+                            expr = (
+                                (
+                                    (
+                                        (expr.replace("[", "array([")).replace(
+                                            "]", "])"
+                                        )
+                                    ).replace("<", "norm(")
+                                ).replace(">", ")")
+                            ).strip(" ")
+                            result = eval(trig_rep(expr))
+                            print("\n[bright_yellow]Result: [/bright_yellow]", end="")
+                            pprint(result)
+                            print()
+
+                        else:
+                            break
+                    except:
+                        logging.error(f'Could not parse: "{expr}"\n')
+
+                print()
+
+            elif cmd == "3":
+                nprint(
+                    "\n[bold bright_green](Current screen: Matrix Calculation Screen)[/bold bright_green]\n"
+                )
+
+                print("Write a matrix like [[1, 2], [3, 4]], then perform operations!")
+                print(
+                    "- Use [bright_magenta]@[/bright_magenta] to calculate the dot product"
+                )
+                print(
+                    "- A pair of [bright_magenta]| |[/bright_magenta] to calculate the determinant."
+                )
+                print('Enter any expression to start ("q" to quit):\n')
+
+                while True:
+                    expr = input()
+                    try:
+                        if expr != "q":
+                            expr = (
+                                (
+                                    (
+                                        (expr.replace("[[", "array([[")).replace(
+                                            "]]", "]])"
+                                        )
+                                    ).replace("|a", "det(a")
+                                ).replace(")|", "))")
+                            ).strip(" ")
+                            result = eval(trig_rep(expr))
+                            print("\n[bright_yellow]Result: [/bright_yellow]\n")
+                            pprint(result)
+                            print()
+
+                        else:
+                            break
+                    except:
+                        print("\n")
+                        logging.error(f'Could not parse: "{expr}"\n')
+
+            elif cmd == "4":
+                print("\n[bright_yellow]Exiting AlgCalc ... ... ...[/bright_yellow]")
+                break
+
+            else:
+                logging.warning(f'Invalid command: "{cmd}"')
+
+        except:
+            print("\n")
+            logging.error("UnknownError: An unknown error occured.")
+            nprint("[bold bright_red]Check if your input is valid.[/bold bright_red]\n")
 
 
 def settings():

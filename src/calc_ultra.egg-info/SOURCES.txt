@@ -12,6 +12,7 @@ src/calc_ultra.egg-info/dependency_links.txt
 src/calc_ultra.egg-info/requires.txt
 src/calc_ultra.egg-info/top_level.txt
 src/calc_ultra/texts/__init__.py
+src/calc_ultra/texts/algcalc.txt
 src/calc_ultra/texts/derivacalc.txt
 src/calc_ultra/texts/intecalc.txt
 src/calc_ultra/texts/limcalc.txt

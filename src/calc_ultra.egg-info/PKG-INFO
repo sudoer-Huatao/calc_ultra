@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: calc_ultra
-Version: 1.3.2
+Version: 1.3.4
 Summary: A calculus calculator with a menu-based interface.
 Author-email: Huatao <huatao.xue@outlook.com>
 Maintainer-email: Huatao <huatao.xue@outlook.com>
@@ -15,19 +15,21 @@ Description-Content-Type: text/markdown
 License-File: LICENSE
 Requires-Dist: sympy>=1.12
 Requires-Dist: numpy>=1.26.2
-Requires-Dist: matplotlib>=3.8.2
+Requires-Dist: matplotlib>=3.8.3
 Requires-Dist: rich>=13.7.1
 Requires-Dist: scipy>=1.12.0
 
 # calc-ultra
 
-[![GPLv3 License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.3.2-blue.svg)](https://github.com/sudoer-Huatao/Calc-ULTRA_Calculus-Calculator)
+[![GPLv3 License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.3.4-blue.svg)](https://github.com/sudoer-Huatao/Calc-ULTRA_Calculus-Calculator)
 
 > **Calculus made easy**
 
-The Calc-ULTRA calculus calculator, but as a module!
+(Turn on dark mode for a better aesthetic)
 
-- Little Python background knowledge needed!
+The Calc-Ultra calculus calculator, but as a module!
+
+- Little Python background knowledge is needed!
 
 Supports:
 
@@ -37,17 +39,21 @@ Supports:
 - Antiderivatives
 - Definite integrals
 - Improper integrals
+- Double integrals
+- Solving (sets) of equation(s)
+- Vector/matrix operations
+- **A perfect interface to do calculations!**  
 
 ## Note
 
-This is the module package of the Calc-ULTRA calculator. For the Python script of this package, visit <https://github.com/sudoer-Huatao/Calc-ULTRA> (unmaintained).
+This is the module package of the Calc-Ultra calculator. For the Python script of this package, visit <https://github.com/sudoer-Huatao/Calc-ULTRA> (**unmaintained**).
 
 ## Installation and Running
 
 > Run the calculus calculator with a single line of code
 
 Command line: `pip3 install calc-ultra`.
-Due to Python import identifiers restrictions, please import Calc-ULTRA as "calc_ultra" and not "calc-ultra" when you need to use the calculator.
+Due to Python import identifiers restrictions, please import Calc-Ultra as "calc_ultra" and not "calc-ultra" when you need to use the calculator.
 
 To run the calculator, import Calc-ULTRA as `calc_ultra` like so:
 
@@ -57,13 +63,13 @@ Make sure you have the latest version installed. To update calc-ultra, run `pip3
 
 ## Requirements
 
-This program requires the `sympy`,  `numpy`, `rich`, `matplotlib`, and `scipy` modules installed. Other required modules are built in to most Python IDEs.
+This program requires the `sympy`,  `numpy`, `rich`, `matplotlib`, and `scipy` modules installed. Other required modules are built into most Python IDEs.
 
 ## Warnings
 
 ### Function limitations
 
-Due to limitations of the SymPy module, **some functions cannot be integrated**. The Error Function `erf(x)` can be integrated in both indefinite integral and definite integral calculation, but the Absolute Value and Factorial functions are only available to definite integral calculations. Integration of composed functions are also limited due to SymPy limitations. While some composed functions work, others don't. 😟
+Due to limitations of the SymPy module, **some functions cannot be integrated**. The Error Function `erf(x)` can be integrated in both indefinite integral and definite integral calculation, but the Absolute Value and Factorial functions are only available to definite integral calculations. Integration of composed functions is also limited due to SymPy limitations. While some composed functions work, others don't. 😟
 
 ## Test PYPI
 
@@ -76,21 +82,30 @@ Previous test versions of this project are on Test PYPI. View on <https://test.p
 A general thank-you to all GitHub users who gave feedback and/or starred this repository. ⭐️
 And... a SPECIAL THANK-YOU to @Haobot for troubleshooting and feedback! 👍❤️
 
-This program was made using SymPy for calculation and Matplotlib and NumPy for graphing.
+This program was made using SymPy and Scipy for calculation and Matplotlib and NumPy for graphing.
 
 ## Gallery
 
 DerivaCalc derivative with graph demo:
-![derivacalc_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/2cac3688-d1da-4b73-b121-b6a2c7cf471c "derivacalc_demo")
+![derivacalc_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/3d99a51d-2e46-414c-8929-fa16016a856a "derivacalc_demo")
 
 InteCalc antiderivative with graph demo:
-![intecalc_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/bcfea09c-078f-4344-9ff0-91a414614244 "intecalc_demo")
+![intecalc_demo_1](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/f61d44ae-cebf-4972-b63f-7f08ee6655b5 "intecalc_demo_1")
 
 InteCalc definite integral with graph demo:
-![intecalc_graph_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/573e1b76-98f8-492a-845a-721f8d7ccd63 "intecalc_graph_demo")
+![intecalc_demo_2](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/b8294186-92f5-4df3-a000-d63f6fff93b0 "intecalc_demo_2")
 
 LimCalc limit demo:
-![limcalc_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/c1069e1c-27ef-4b7a-b68b-49432ed31e5f "limcalc_demo")
+![limcalc_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/12db6a7b-a836-43ce-8cef-7bcf707051f7 "limcalc_demo")
+
+AlgCalc equation solver demo:
+![algcalc_demo_1](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/e4cfa016-52bf-43b5-a839-af9f42546468 "algcalc_demo_1")
+
+AlgCalc vector operation demo:
+![algcalc_demo_2](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/7f043cb2-6b0a-4460-ab35-30f09632b1c3 "algcalc_demo_2")
+
+AlgCalc matrix operation demo:
+![algcalc_demo_3](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/a9a5d56e-424a-4ef8-beb9-a9b64ce1a3f5 "algcalc_demo_3")
 
 ## License
 
