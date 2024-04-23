@@ -1,24 +1,24 @@
 
 
-   -------------------------------------------------------------------------
-  +----      ^      |       +----      |   |  |    --+--  +---+      ^      |
-  |         / \     |       |          |   |  |      |    |   |     / \     |
-  |        / - \    |       |      --  |   |  |      |    |---+    / - \    |
-  |       /     \   |       |          |   |  |      |    |  \    /     \ 
-  +----  /       \  +-----  +----      +---+  +----  |    |   \  /       \  0
-   -------------------------------------------------------------------------
+   ----------------------------------------------------------------------
+  +----      ^      |       +----      |   |  |    --+--  +---+      ^
+  |         / \     |       |          |   |  |      |    |   |     / \
+  |        / - \    |       |      --  |   |  |      |    |---+    / - \
+  |       /     \   |       |          |   |  |      |    |  \    /     \
+  +----  /       \  +-----  +----      +---+  +----  |    |   \  /       \
+   ----------------------------------------------------------------------
 
-           --------------------------------------------------------
-          | The ULTIMATE Derivative - Integral - Limit Calculator! |
-           --------------------------------------------------------
+	            -----------------------------------
+        	   | The Ultimate Calculus Calculator! |
+	            -----------------------------------
 
-Calc-ULTRA supports:
+Calc-Ultra supports:
 
- - Special numbers including Pi and e;
+ - Special numbers including pi and e;
  - Trigonometric functions;
  - Exponents (for base e, input as "exp(x)");
- - The Natural Logarithm (input as "log(x)");
- - Inverse Trigonometric Functions (input as "a" followed by a trig function, e.g. asin);
+ - The Natural Logarithm ("log(x)");
+ - Inverse Trigonometric Functions;
  - Hyperbolic Functions and Inverse Hyperbolic Functions;
  - Other Functions such as the Factorial factorial(x), the Error Function erf(x) and more!
 
@@ -30,4 +30,4 @@ Commands:
 --> 4: Open LimCalc
 --> 5: Open Algcalc
 --> 6: Open calculator settings
---> 7: Quit Calc-ULTRA
+--> 7: Quit Calc-Ultra
