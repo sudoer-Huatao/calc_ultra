@@ -8,19 +8,6 @@
   +----  /       \  +-----  +----      +---+  +----  |    |   \  /       \
    ----------------------------------------------------------------------
 
-	            -----------------------------------
-        	   | The Ultimate Calculus Calculator! |
-	            -----------------------------------
-
-Calc-Ultra supports:
-
- - Special numbers including pi and e;
- - Trigonometric functions;
- - Exponents (for base e, input as "exp(x)");
- - The Natural Logarithm ("log(x)");
- - Inverse Trigonometric Functions;
- - Hyperbolic Functions and Inverse Hyperbolic Functions;
- - Other Functions such as the Factorial factorial(x), the Error Function erf(x) and more!
 
 Commands:
 
