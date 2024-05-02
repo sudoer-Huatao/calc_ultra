@@ -1,20 +1,19 @@
 # calc-ultra
 
-[![GPLv3 License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.3.4-blue.svg)](https://github.com/sudoer-Huatao/Calc-ULTRA_Calculus-Calculator)
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.3.5-blue.svg)](https://github.com/sudoer-Huatao/calc_ultra)
 
 > **Calculus made easy**
 
-(Turn on dark mode for a better aesthetic)
+(Turn on dark mode for a better aesthetic) 📲
 
-The Calc-Ultra calculus calculator, but as a module!
-
-- Little Python background knowledge is needed!
+Calc-Ultra is a multi-functional calculator that uses command line interfaces. Little Python background knowledge is needed to use the calculator!
 
 Supports:
 
 - Derivatives
 - Partials
 - Implicit differentiation
+- Limits
 - Antiderivatives
 - Definite integrals
 - Improper integrals
@@ -23,47 +22,58 @@ Supports:
 - Vector/matrix operations
 - **A perfect interface to do calculations!**  
 
-## Note
+## Chinese version
 
-This is the module package of the Calc-Ultra calculator. For the Python script of this package, visit <https://github.com/sudoer-Huatao/Calc-ULTRA> (**unmaintained**).
+Want to check out the Chinese version? Visit <https://github.com/sudoer-Huatao/calc_ultra-chinese>! 🇨🇳
 
 ## Installation and Running
 
 > Run the calculus calculator with a single line of code
 
-Command line: `pip3 install calc-ultra`.
-Due to Python import identifiers restrictions, please import Calc-Ultra as "calc_ultra" and not "calc-ultra" when you need to use the calculator.
+Use the following command to download Calc-Ultra (pip should be installed):
 
-To run the calculator, import Calc-ULTRA as `calc_ultra` like so:
+`pip3 install calc-ultra`
+
+Due to Python import identifiers restrictions, please import Calc-Ultra as "calc_ultra" and not "calc-ultra".
+
+Import Calc-Ultra like so to use:
 
 `from calc_ultra import main`
 
-Make sure you have the latest version installed. To update calc-ultra, run `pip3 install --upgrade calc-ultra`.
+Please make sure you have the latest version installed. To update calc-ultra, run the following command:
+
+`pip3 install --upgrade calc-ultra`
 
 ## Requirements
 
-This program requires the `sympy`,  `numpy`, `rich`, `matplotlib`, and `scipy` modules installed. Other required modules are built into most Python IDEs.
+Calc-Ultra requires these modules/packages:
 
-## Warnings
+- `sympy`
+- `numpy`
+- `matplotlib`
+- `scipy`
+- `rich`
+- `prompt-toolkit`
 
-### Function limitations
-
-Due to limitations of the SymPy module, **some functions cannot be integrated**. The Error Function `erf(x)` can be integrated in both indefinite integral and definite integral calculation, but the Absolute Value and Factorial functions are only available to definite integral calculations. Integration of composed functions is also limited due to SymPy limitations. While some composed functions work, others don't. 😟
+If you do not have them installed, there is no need to worry. The modules needed should be installed automatically if you don't have them. Other required modules are built into most Python IDEs as well.
 
 ## Test PYPI
 
-Previous test versions of this project are on Test PYPI. View on <https://test.pypi.org/project/calc-ultra/>.
+Previous test versions of this project are on Test PYPI. View on <https://test.pypi.org/project/calc-ultra/>. 💾
 
 ## Acknowledgements
 
 > Without them, this would be impossible
 
-A general thank-you to all GitHub users who gave feedback and/or starred this repository. ⭐️
-And... a SPECIAL THANK-YOU to @Haobot for troubleshooting and feedback! 👍❤️
+A big thank-you to all GitHub users who gave feedback and/or starred this repository. ⭐️ Your encouragement is our motivation.
+The following contributors deserve a SPECIAL THANK-YOU 👍❤️:
 
-This program was made using SymPy and Scipy for calculation and Matplotlib and NumPy for graphing.
+- @Haobot for troubleshooting and feedback!
+- Fanbo for feedback and ideas for improvement!
 
-## Gallery
+This program was made using `sympy` for calculation and `numpy`, `scipy`, and `matplotlib` for graphing.
+
+## Gallery (Demos)
 
 DerivaCalc derivative with graph demo:
 ![derivacalc_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/3d99a51d-2e46-414c-8929-fa16016a856a "derivacalc_demo")
