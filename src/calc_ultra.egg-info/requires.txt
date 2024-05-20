@@ -1,6 +1,0 @@
-sympy>=1.12
-numpy>=1.26.2
-matplotlib>=3.8.4
-rich>=13.7.1
-scipy>=1.13.0
-prompt_toolkit>=3.0.43
