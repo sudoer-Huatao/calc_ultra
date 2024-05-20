@@ -6,8 +6,8 @@ build-backend = "setuptools.build_meta"
 supported_platforms = ["macos"]
 
 [project]
-name = "calc_ultra"
-version = "1.3.5"
+name = "Calc-Ultra"
+version = "1.3.7"
 dependencies = [
   "sympy >= 1.12",
   "numpy >= 1.26.2",
@@ -23,7 +23,7 @@ authors = [
 maintainers = [
   { name="Huatao", email="huatao.xue@outlook.com "}
 ]
-description = "A calculus calculator with a menu-based interface."
+description = "A calculus calculator with a command-line and menu-based interface."
 readme = "README.md"
 license = {text = "MIT License"}
 keywords = ["calculus", "calculator"]
