@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 supported_platforms = ["macos"]
 
 [project]
-name = "Calc-Ultra"
+name = "calc_ultra"
 version = "1.3.7"
 dependencies = [
   "sympy >= 1.12",
