@@ -1,8 +1,4 @@
 r"""
-calc_ultra is a multi-functional, user-friendly
-
-calculus calculator. Import main from calc_ultra
-
-and calculate away!
+Calc-Ultra is a calculus calculator. Supports calculus and linear algebra calculations!
 
 """
