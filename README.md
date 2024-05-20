@@ -6,7 +6,7 @@
 
 (Turn on dark mode for a better aesthetic) 📲
 
-Calc-Ultra (styled as CALC ULTRA) is a multi-functional calculator that uses a command line interface. Little Python background knowledge is needed to use this calculator!
+Calc-Ultra (styled as CALC ULTRA) is a multi-functional calculator that uses a command-line/menu-based interface. Little Python background knowledge is needed to use this calculator!
 
 Supports:
 
