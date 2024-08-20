@@ -1,6 +1,6 @@
 """
 This example is meant to illustrate how to import Calc-Ultra.
-In real practice, only line 7 is needed.
+In real practice, only line 8 is needed.
 """
 
 if __name__ == "__main__":
