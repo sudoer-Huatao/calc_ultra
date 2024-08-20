@@ -1,12 +1,12 @@
 # Calc-Ultra
 
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.3.7-blue.svg)](https://pypi.org/project/calc-ultra/)
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.3.8-blue.svg)](https://pypi.org/project/calc-ultra/)
 
-> **Calculus made easy**
+> **Advanced math made easy**
 
 (Turn on dark mode for a better aesthetic) 📲
 
-Calc-Ultra (styled as CALC ULTRA) is a multi-functional calculator that uses a command-line/menu-based interface. Little Python background knowledge is needed to use this calculator!
+Calc-Ultra (styled as CALC ULTRA) is a multi-functional calculator that uses a command-line/menu-based interface. Little Python background knowledge is needed to use this calculator! (Please star the GitHub repo if you find this project helpful! ❤️)
 
 Supports:
 
@@ -14,6 +14,7 @@ Supports:
 - Derivatives
 - Partials
 - Implicit differentiation
+- Extrema Calculator
 - Limits
 - Antiderivatives
 - Definite integrals
@@ -21,11 +22,12 @@ Supports:
 - Double integrals
 - Solving (sets) of equation(s)
 - Vector/matrix operations
+- Taylor Polynomial Approximations
 - **A perfect interface to do calculations!**  
 
 ## Chinese version
 
-Want to check out the Chinese version? Visit the Chinese version [here](https://github.com/sudoer-Huatao/calc_ultra-chinese)! 🇨🇳
+Want to check out the Chinese version? Visit the Chinese version [here](https://github.com/sudoer-Huatao/calc_ultra-chinese) (Work in progress)! 🇨🇳
 
 ## Installation and Running
 
@@ -74,31 +76,16 @@ The following contributors deserve a SPECIAL THANK-YOU 👍❤️:
 
 This program was made using `sympy` for calculation and `numpy`, `scipy`, and `matplotlib` for graphing.
 
-## Gallery (Demos)
+## New Features Demo
 
-Simple calculation screen demo:
-![simple_calculation_screen_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/9df15b7e-e239-4f99-8966-db684ff36b68 "simple_calculation_demo")
+Taylor Approximation demo: (VS Code)
+![taylor](https://github.com/user-attachments/assets/680a33dc-2900-43af-99f0-f0f9803a10e0)
 
-DerivaCalc derivative with graph demo:
-![derivacalc_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/d0491f48-1a4f-4538-be7e-0bf793815eff "derivacalc_demo")
 
-InteCalc antiderivative with graph demo:
-![intecalc_demo_1](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/2375f351-46ae-4bfd-ad25-af599a26bbce "intecalc_demo_1")
+Extrema calculator demo: (VS Code)
+![extrema](https://github.com/user-attachments/assets/7132c094-f705-4ab4-a1ae-57aa2cdd1d74)
 
-InteCalc definite integral with graph demo:
-![intecalc_demo_2](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/0af601a5-3d4c-4db5-a2aa-dff4b6bdd4b5 "intecalc_demo_2")
-
-LimCalc limit and one-sided limit demo:
-![limcalc_demo](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/bdecb164-b28c-4b4c-9f0a-cf9c44dfad90 "limcalc_demo")
-
-AlgCalc equation solver demo:
-![algcalc_demo_1](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/74beffa8-7c82-4499-a114-8278e9929cdb "algcalc_demo_1")
-
-AlgCalc vector operation demo:
-![algcalc_demo_2](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/48b9624f-ab32-4f4c-99f7-1860dfd487a0 "algcalc_demo_2")
-
-AlgCalc matrix operation demo:
-![algcalc_demo_3](https://github.com/sudoer-Huatao/calc_ultra/assets/135504586/dee6cc8e-765d-4c41-b322-03f3ee501aac "algcalc_demo_3")
+For more info, check the changelog.
 
 ## License
 
