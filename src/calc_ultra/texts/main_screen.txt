@@ -13,9 +13,9 @@
 Commands:
 
 --> 1: Open basic calculation interface
---> 2: Open DerivaCalc
---> 3: Open InteCalc
---> 4: Open LimCalc
---> 5: Open Algcalc
+--> 2: Open the Derivative Calculator
+--> 3: Open the Integral Calculator
+--> 4: Open the Limit Calculator
+--> 5: Open the Algebra Calculator
 --> 6: Open calculator settings
 --> 7: Quit Calc-Ultra
