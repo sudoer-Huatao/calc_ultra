@@ -5,6 +5,7 @@ pyproject.toml
 src/.DS_Store
 src/calc_ultra/.DS_Store
 src/calc_ultra/__init__.py
+src/calc_ultra/example.py
 src/calc_ultra/main.py
 src/calc_ultra.egg-info/PKG-INFO
 src/calc_ultra.egg-info/SOURCES.txt
