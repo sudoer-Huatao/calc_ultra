@@ -4,6 +4,8 @@
 
 
 from rich import print
+from rich.text import Text
+from rich.panel import Panel
 
 print(
     "\n[bright_yellow]Initializing Calc-Ultra. Might take some time on first startup ...[/bright_yellow]"
@@ -39,6 +41,7 @@ from sympy import (
     limit,
     solve,
     linsolve,
+    im,
     pprint,
     simplify,
     symbols,
@@ -47,7 +50,8 @@ from sympy import (
     uppergamma,
     zeta,
 )
-from sympy.core.numbers import pi, E, I, oo
+from sympy import re as real
+from sympy.core.numbers import pi, E, EulerGamma, I, oo, zoo
 import scipy.special as ss
 from scipy.special import polygamma, gammainc, gammaincc, erf, erfc
 from rich.progress import (
@@ -68,7 +72,7 @@ from random import randint
 from readline import parse_and_bind
 from time import sleep
 from warnings import filterwarnings
-import datetime
+import datetime, re
 
 
 ###########
@@ -79,7 +83,7 @@ filterwarnings("ignore")
 
 parse_and_bind("tab: complete")
 
-x, y, z, t, m = symbols("x, y, z, t, m")
+x, y, z, u, t, a, b, c, m, n = symbols("x, y, z, u, t, a, b, c, m, n")
 
 history = [""]  # Stores calculation history
 
@@ -90,6 +94,8 @@ idx = 1
 save_path = dirname(abspath(__file__)) + "/fig.pdf"
 
 expr_replace = [
+    ("inf", "oo"),
+    (")(", ")*("),
     ("E", "E1"),
     ("e", "E1"),
     # The extra 1 at the end is to recognize whether the "e"
@@ -99,11 +105,15 @@ expr_replace = [
     ("E1**", "exp"),
     ("E1xp", "exp"),
     ("E1r", "er"),
+    ("E1c", "ec"),
     ("sIn", "sin"),
     ("pI", "pi"),
     ("Ia", "ia"),
-    ("ln", "log"),
+    ("ln", "log"),  # We love log
     ("arc", "a"),
+    ("aos", "acos"),
+    ("asc", "acsc"),
+    ("aot", "acot"),
     ("pi", "3.141592653589793"),
     ("E1", "2.718281828459045"),
 ]
@@ -112,9 +122,6 @@ graph_replace = [
     ("asin", "arcsin"),
     ("acos", "arccos"),
     ("atan", "arctan"),
-    ("csc", "1/sin"),
-    ("sec", "1/cos"),
-    ("cot", "1/tan"),
     ("gamma", "ss.gamma"),
     ("polyss.gamma", "polygamma"),
     ("lowergamma", "gammainc"),
@@ -184,103 +191,79 @@ def _(event):
 
 def simp():
     print(
-        '\n[bold bright_green](Current Screen: Simple Calculation Screen)[/bold bright_green]\n\n("q" to quit)\n\nEnter any expression:\n'
+        '\n[bold bright_green](Current Screen: Simple Calculation Screen)[/bold bright_green]\n\n("q" to quit, Control + C to clear history)\n\nEnter any expression:\n'
     )
 
     while True:
         expr = prompt(key_bindings=key_bindings)
 
-        try:
-            if expr != "q":
-                # Easy to exit unlike VIM ;)
-                expr = expr.replace(" ", "")
+        if expr != "q":
+            # Easy to exit unlike VIM ;)
+            expr = expr.replace(" ", "")
 
-                if "?=" in expr:
-                    left = replace_expr(expr[: expr.find("?=")])
-                    right = replace_expr(expr[expr.find("?=") + 2 :])
+            if "?=" in expr:
+                left = replace_expr(expr[: expr.find("?=")])
+                right = replace_expr(expr[expr.find("?=") + 2 :])
 
-                    if "x" in left or "x" in right:
-                        equals = "True."
+                if "x" in left or "x" in right:
+                    equals = "True."
 
-                        left = str(left)
-                        right = str(right)
-
+                    if simplify(left) != simplify(right):
                         for i in range(-100, 100):
-                            left_result = simplify(
+                            left_result = round(
                                 left.replace("x", str(i)).replace("e" + str(i), "ex")
-                            ).evalf()
-                            right_result = simplify(right.replace("x", str(i))).evalf()
-
-                            if (
-                                "I" not in str(left_result)
-                                and left_result < 0.000001
-                                and left_result > -0.000001
-                            ):
-                                left_result = 0
-
-                            if (
-                                "I" not in str(right_result)
-                                and right_result < 0.000001
-                                and right_result > -0.000001
-                            ):
-                                right_result = 0
-
-                            if str(left_result).rstrip("*I") != str(
-                                right_result
-                            ).rstrip("*I"):
-                                equals = "False."
-                                print(left_result, right_result)
-                                break
-
-                        print(f"\n{equals}\n")
-
-                    else:
-                        left = replace_calc(left)
-                        right = replace_calc(right)
-
-                        if str(left).endswith("0") and left != 0:
-                            left = str(left).rstrip("0")
-
-                        if str(right).endswith("0") and right != 0:
-                            right = str(right).rstrip("0")
-
-                        if left == right:
-                            print("\nTrue.\n")
-
-                        else:
-                            print(
-                                "\nFalse.\n\nLeft side: "
-                                + left
-                                + ". Right side: "
-                                + right
-                                + ".\n"
                             )
 
+                            right_result = round(
+                                right.replace("x", str(i)).replace("e" + str(i), "ex")
+                            )
+
+                            if left_result != right_result:
+                                equals = "False."
+                                break
+
+                    print(f"\n{equals}\n")
+
                 else:
-                    result = replace_expr(expr)
+                    left = round(left)
+                    right = round(right)
 
-                    result = replace_calc(result)
+                    if str(left).endswith("0") and left != 0:
+                        left = str(left).rstrip("0")
 
-                    if result == None:
-                        error("Could not complete calculation.")
+                    if str(right).endswith("0") and right != 0:
+                        right = str(right).rstrip("0")
+
+                    if left == right:
+                        print("\nTrue.\n")
 
                     else:
-                        if str(result).endswith("0") and result != 0:
-                            result = eval(str(result).rstrip("0"))
-
-                        if history[len(history) - 1] != str(result) and result != None:
-                            history.append(str(result))
-
-                        print("\n[bright_yellow]Result: [/bright_yellow]", end="")
-                        pprint(result)
-                        print()
+                        print(
+                            "\nFalse.\n\nLeft side: "
+                            + str(left)
+                            + ". Right side: "
+                            + str(right)
+                            + ".\n"
+                        )
 
             else:
-                break
+                result = round(replace_expr(expr))
 
-        except:
-            print()
-            error(f'Could not parse: "{expr}".\n')
+                if result == None:
+                    print()
+                    error("Could not complete calculation.")
+                    print()
+
+                else:
+                    if history[len(history) - 1] != str(result) and result != None:
+                        history.append(str(result))
+
+                    print("\n[bright_yellow]Result: [/bright_yellow]", end="")
+                    print_expr(result)
+                    print()
+
+        else:
+            break
 
 
 def derive(function: str, order: str):
@@ -296,7 +279,8 @@ def derive(function: str, order: str):
 
     calc = replace_expr(function)
 
-    check_order(order)
+    if check_order(order) == False:
+        return ""
 
     global df
     df = diff(calc, x, order)
@@ -379,7 +363,8 @@ def partial_derive(function: str, var: str, order: str):
 
     calc = replace_expr(function)
 
-    check_order(order)
+    if check_order(order) == False:
+        return ""
 
     df = diff(calc, var, order)
 
@@ -409,7 +394,8 @@ def implicit_derive(circ: str, order: str):
     left = eval(calc[: calc.find("=")])
     right = eval(calc[calc.find("=") + 1 :])
 
-    check_order(order)
+    if check_order(order) == False:
+        return ""
 
     df = idiff(left - right, y, x, order)
 
@@ -423,6 +409,46 @@ def implicit_derive(circ: str, order: str):
 
     if history[len(history) - 1] != df:
         history.append(df)
+
+
+def extrema(function: str):
+    r"""Extrema finder for a function.
+
+    Explanation
+    ===========
+
+    Takes a function and calculates it's derivative, then uses the
+    second derivative test to determine whether it is a (global)
+    minimum, maximum, or "stopping" point (saddle).
+    """
+
+    try:
+        df = diff(function, x)
+        extrema = solve(str(df))
+
+    except:
+        error("Cannot compute derivative test.")
+
+    for extremum in extrema:
+        ddf = simplify(
+            str(diff(df, x))
+            .replace("x", str(extremum))
+            .replace("e" + str(extremum), "ex")
+        )
+        print()
+
+        if ddf > 0:
+            print(f"Point {str(extremum)} is a minimum of {function}.")
+
+        elif ddf < 0:
+            print(f"Point {str(extremum)} is a maximum of {function}.")
+
+        else:
+            print(
+                f"Point {str(extremum)} is a stopping point (saddle point) of {function}."
+            )
+
+        print()
 
 
 def antiderive(function: str):
@@ -439,7 +465,8 @@ def antiderive(function: str):
     F = Integral(calc, x).doit()
 
     if "Integral" in str(F):
-        warning("Cannot compute integral.\n")
+        print()
+        warning("Cannot compute integral.")
         return ""
 
     print(
@@ -523,15 +550,17 @@ def def_int(function: str, low: str, up: str):
 
     calc = replace_expr(function)
 
-    check_num(low)
+    if check_num(low) == False:
+        return ""
 
     calc_low = eval(replace_expr(low))
 
-    check_num(up)
+    if check_num(up) == False:
+        return ""
 
     calc_up = eval(replace_expr(up))
 
-    result = integrate(calc, (x, calc_low, calc_up))
+    result = str(integrate(calc, (x, calc_low, calc_up)))
 
     graph_up = eval(replace_expr(str(calc_up)))
     graph_low = eval(replace_expr(str(calc_low)))
@@ -540,26 +569,28 @@ def def_int(function: str, low: str, up: str):
     # Composite functions usually do not have primitive antiderivatives
     # so calc-ultra is equipped with both symbolic and numerical answers.
 
-    if (
-        (str(result) == "nan")
-        or ("i" in str(result))
-        and ("Integral" not in str(result))
-    ):
-        warning("Cannot compute integral because integral does not converge.")
-        return ""
+    if "Integral" not in result:
+        if (result == "nan") or ("i" in result):
+            print()
+            warning("Cannot compute integral because integral does not converge.")
+            return ""
 
-    if "Integral" not in str(result):
         print(
             f"\nCalculated integral of [bright_magenta]{replace_graph(function)}[/bright_magenta] from {low} to {up}. Final area is:\n"
         )
         print_expr(result)
-        result = replace_expr(str(result))
+        result = replace_expr(result)
 
         if history[len(history) - 1] != result:
             history.append(result)
 
     else:
         print("\nCannot express result symbolically.")
+
+    if "Integral" in str(num_result):
+        print()
+        warning("Cannot compute numeric integral.")
+        return ""
 
     print("\nNumeral evaluation/approximation:\n")
     print_expr(num_result)
@@ -679,9 +710,6 @@ def def_int(function: str, low: str, up: str):
             warning("Could not graph function.")
             return "\nExited graph."
 
-    else:
-        return "\n[bright_yellow]Exiting Definite Integral Screen ... ... ...[/bright_yellow]"
-
 
 def improp_int(function: str, low: str, up: str):
     r"""Calculates the improper integral of a function.
@@ -698,11 +726,13 @@ def improp_int(function: str, low: str, up: str):
 
     function = replace_expr(function)
 
-    check_num(low)
+    if check_num(low) == False:
+        return ""
 
     calc_low = eval(replace_expr(low))
 
-    check_num(up)
+    if check_num(up) == False:
+        return ""
 
     calc_up = eval(replace_expr(up))
 
@@ -740,8 +770,6 @@ def improp_int(function: str, low: str, up: str):
         if history[len(history) - 1] != improper_area:
             history.append(improper_area)
 
-    print()
-
 
 def double_int(function: str, out_low: str, out_up: str, in_low: str, in_up: str):
     r"""Calculates the double integral of a function over region R.
@@ -756,11 +784,13 @@ def double_int(function: str, out_low: str, out_up: str, in_low: str, in_up: str
 
     function = replace_expr(function)
 
-    check_num(out_low)
+    if check_num(out_low) == False:
+        return ""
 
     out_low = eval(replace_expr(out_low))
 
-    check_num(out_up)
+    if check_num(out_up) == False:
+        return ""
 
     out_up = eval(replace_expr(out_up))
 
@@ -802,7 +832,8 @@ def lim(function: str, value: str):
 
     function = replace_expr(function)
 
-    check_num(value)
+    if check_num(value) == False:
+        return ""
 
     value = float(eval(replace_expr(value)))
 
@@ -813,11 +844,12 @@ def lim(function: str, value: str):
         return ""
 
     if limit(function, x, value, "+") != limit(function, x, value, "-"):
+        print()
         warning(
-            "\nThe limit does not exist (the limit approaching from the right does not equal the limit approaching from the left)."
+            "The limit does not exist (the limit approaching from the right does not equal the limit approaching from the left)."
         )
         print(
-            "[bright_red]Use one-side limit calculation to calculate the limit from one direction.[/bright_red]\n"
+            "[bright_red]Use one-side limit calculation to calculate the limit from one direction.[/bright_red]"
         )
         return ""
 
@@ -842,7 +874,8 @@ def side_lim(function: str, value: str, direction: str):
     """
     function = replace_expr(function)
 
-    check_num(value)
+    if check_num(value) == False:
+        return ""
 
     value = float(eval(replace_expr(value)))
 
@@ -860,7 +893,8 @@ def side_lim(function: str, value: str, direction: str):
     l = limit(function, x, value, dir=direction_sign)
 
     if "Limit" in str(l):
-        warning("\nCannot compute limit.")
+        print()
+        warning("Cannot compute limit.")
         return ""
 
     print(
@@ -886,17 +920,18 @@ def eq_solve(mode: str):
     eq_list = []
 
     if mode == "1":
-        eq1 = input("\nEnter equation: ")
-        left = eval(eq1[: eq1.find("=")])
-        right = eval(eq1[eq1.find("=") + 1 :])
+        eq1 = prompt("\nEnter equation: ", key_bindings=key_bindings)
+        left = simplify(eq1[: eq1.find("=")])
+        right = simplify(eq1[eq1.find("=") + 1 :])
         eq_set = solve(left - right)
         if len(eq_set) == 0:
             print()
             error("Cannot solve equation")
+            print()
         else:
             print("\nx:\n")
             for i in range(0, len(eq_set)):
-                pprint(eq_set[i])
+                print_expr(eq_set[i])
                 sol = replace_expr(str(eq_set[i]))
 
                 if history[len(history) - 1] != sol:
@@ -906,12 +941,12 @@ def eq_solve(mode: str):
 
     elif mode == "2":
         eq1 = input("Enter first equation: ")
-        left1 = eval(eq1[: eq1.find("=")])
-        right1 = eval(eq1[eq1.find("=") + 1 :])
+        left1 = simplify(eq1[: eq1.find("=")])
+        right1 = simplify(eq1[eq1.find("=") + 1 :])
 
         eq2 = input("Enter second equation: ")
-        left2 = eval(eq2[: eq2.find("=")])
-        right2 = eval(eq2[eq2.find("=") + 1 :])
+        left2 = simplify(eq2[: eq2.find("=")])
+        right2 = simplify(eq2[eq2.find("=") + 1 :])
 
         eq_set = str(linsolve((left1 - right1, left2 - right2), (x, y), (-1, 1)))
         eqs = eq_set.strip("{").strip("}").strip("(").strip(")")
@@ -920,20 +955,20 @@ def eq_solve(mode: str):
 
         result = "".join(eq_list)
         print("\nx, y:\n")
-        pprint(result)
+        print_expr(result)
 
     elif mode == "3":
         eq1 = input("Enter equation 1: ")
-        left1 = eval(eq1[: eq1.find("=")])
-        right1 = eval(eq1[eq1.find("=") + 1 :])
+        left1 = simplify(eq1[: eq1.find("=")])
+        right1 = simplify(eq1[eq1.find("=") + 1 :])
 
         eq2 = input("Enter equation 2: ")
-        left2 = eval(eq2[: eq2.find("=")])
-        right2 = eval(eq2[eq2.find("=") + 1 :])
+        left2 = simplify(eq2[: eq2.find("=")])
+        right2 = simplify(eq2[eq2.find("=") + 1 :])
 
         eq3 = input("Enter equation 3: ")
-        left3 = eval(eq3[: eq3.find("=")])
-        right3 = eval(eq3[eq3.find("=") + 1 :])
+        left3 = simplify(eq3[: eq3.find("=")])
+        right3 = simplify(eq3[eq3.find("=") + 1 :])
 
         eq_set = str(
             linsolve(
@@ -946,7 +981,46 @@ def eq_solve(mode: str):
 
         result = "".join(eq_list)
         print("\nx, y, z:\n")
-        pprint(result)
+        print_expr(result)
+
+
+def generate_taylor(function: str, order: int, a: str, point: str):
+    r"""Taylor Polynomial generator for approximating a function at a given point.
+
+    Explanation:
+    ============
+
+    Takes a function, an order of the polynomial, a point a,
+    and a point of approximation near x=a. Returns the approximated value
+    of the function at the given point using a Taylor Polynomial of said function.
+    """
+
+    org = function
+    diffs = [function]
+    start = function
+    for i in range(1, order + 1):
+        function = str(diff(start, x, i))
+        diffs.append(function.replace("x", a).replace("e" + a, "ex"))
+    terms = [diffs[0].replace("x", a).replace("e" + a, "ex")]
+    for i in range(1, order + 1):
+        terms.append(
+            "(" + diffs[i] + ")" + "/" + str(factorial(i)) + "*(x-" + a + ")**" + str(i)
+        )
+
+    try:
+        terms = simplify(
+            "+".join(terms).replace("x", point).replace("e" + point, "ex")
+        ).evalf()
+        print(
+            f"\nApproximated value of [bright_magenta]{org}[/bright_magenta] at x={point}, a={a}, with order {order} polynomial:\n"
+        )
+        pprint(terms)
+        print()
+
+    except:
+        print()
+        error("Could not approximate using Taylor Polynomial.")
+        print()
 
 
 ################
@@ -968,12 +1042,14 @@ def check_simp(expr: str) -> bool:
     """
 
     try:
-        if str(simplify(expr, evaluate=False)) != expr:
+        if str(simplify(expr, evaluate=False)).replace(" ", "") != expr:
             print("\nSimplify/rewrite:\n")
             print_expr(simplify(expr, evaluate=False))
 
         else:
             return False
+
+        return True
 
     except:
         pass
@@ -992,6 +1068,9 @@ def check_order(order: str):
     if ("." in order) or (order.isnumeric() == False):
         print()
         error("Invalid order of differentiation.")
+        return False
+
+    return True
 
 
 def check_num(num: str):
@@ -1023,6 +1102,9 @@ def check_num(num: str):
     ):
         print()
         error("Invalid integration bound/numerical expression.")
+        return False
+
+    return True
 
 
 def replace_expr(expr: str) -> str:
@@ -1035,9 +1117,22 @@ def replace_expr(expr: str) -> str:
     """
 
     expr = expr.replace(" ", "")
+    expr = re.sub(r"(\d)([a-zA-Z\(])", r"\1*\2", expr)
 
     for r in expr_replace:
         expr = expr.replace(*r)
+
+    expr = re.sub(r"acsch\((.*?)\)", r"asinh(1/(\1))", expr)
+    expr = re.sub(r"asech\((.*?)\)", r"acosh(1/(\1))", expr)
+    expr = re.sub(r"acoth\((.*?)\)", r"atanh(1/(\1))", expr)
+
+    expr = re.sub(r"acsc\((.*?)\)", r"asin(1/(\1))", expr)
+    expr = re.sub(r"asec\((.*?)\)", r"acos(1/(\1))", expr)
+    expr = re.sub(r"acot\((.*?)\)", r"atan(1/(\1))", expr)
+
+    expr = re.sub(r"csc\((.*?)\)", r"(1/sin(\1))", expr)
+    expr = re.sub(r"sec\((.*?)\)", r"(1/cos(\1))", expr)
+    expr = re.sub(r"cot\((.*?)\)", r"(1/tan(\1))", expr)
 
     return expr
 
@@ -1049,10 +1144,6 @@ def replace_graph(function: str) -> str:
     ===========
 
     Takes a string and sanatizes it for graphing.
-    This replacement includes changing prefixes of trig
-    functions (since Sympy and Numpy trig functions uses
-    different prefixes) and an implementation of csc, sec,
-    cot, etc. (since Numpy does not provide them).
     """
 
     # Graph constant functions
@@ -1066,53 +1157,32 @@ def replace_graph(function: str) -> str:
     return function
 
 
-def replace_calc(expr: str):
+def round(expr: str):
     r"""Replaces an expression for calculation.
 
     Explanation
     ===========
 
-    Takes a string and sanatizes it for simple calculation
-    (i.e., calculation without calculus operations). This
-    replacement algorithm mainly deals with results that
-    should be 0 but instead outputs an answer near 0 (and is
-    simply changed to just 0), and complex numbers with an
-    imaginary part close to 0 (changed to 0). e.g., exp(i*pi)
-    gives a -1.0 * (a really small number). Using replace_calc
-    changes it to just -1.0.
+    Takes a string and rounds it. This is because some
+    algorithms have slight errors in calculations. e.g.,
+    exp(i*pi) gives 0 + a very small number * I, whereas
+    it should just give 0 + 0I (i.e., 0). round also removes
+    trailing zeros from calculations, e.g. cos(pi) gives 1.0
+    000000000. This just simplifies to 1.0.
     """
 
-    try:
-        expr = simplify(expr.replace(" ", "").replace("ss.gamma", "gamma")).evalf()
+    expr = simplify(expr.replace(" ", "").replace("ss.gamma", "gamma")).evalf()
 
-        if "I" not in str(expr):
-            if eval(str(expr)) < 0.000001 and eval(str(expr)) > -0.000001:
-                expr = 0
+    if real(expr) < 0.000001 and real(expr) > -0.000001:
+        expr = im(expr) * I
 
-        else:
-            expr = str(expr)
-            if "+" in str(expr):
-                imag = simplify(expr[expr.find("+") + 1 :].rstrip("*I")).evalf()
-                if imag < 0.000001 and imag > -0.000001:
-                    expr = simplify(expr[: expr.find("+")].rstrip("*I")).evalf()
+    if im(expr) < 0.000001 and im(expr) > -0.000001:
+        expr = real(expr)
 
-                else:
-                    expr = simplify(expr).evalf()
+    if expr != 0:
+        expr = simplify(str(expr).rstrip("0") + "0")
 
-            else:
-                if (
-                    simplify(expr.rstrip("*I")).evalf() < 0.000001
-                    and simplify(expr.rstrip("*I")).evalf() > -0.000001
-                ):
-                    expr = 0
-
-                else:
-                    expr = simplify(expr).evalf()
-
-        return expr
-
-    except:
-        pass
+    return expr
 
 
 def print_expr(text: str):
@@ -1150,6 +1220,19 @@ def nprint(text: str):
     sleep(0.04)
 
 
+def continue_press():
+    r"""
+    Why are you even reading this. I'm just lazy, ok?
+
+
+    This function only serves purpose due to my laziness.
+
+
+    Bye.
+    """
+    input("Press any key to continue: ")
+
+
 ####################
 # Driving programs #
 ####################
@@ -1168,9 +1251,9 @@ def main():
 
         while not progress.finished:
             progress.update(task, advance=1)
-            sleep(randint(2, 5) / 100)
+            sleep(randint(1, 3) / 100)
 
-    global x, y, z, t, m, history, expr_replace, graph_replace, save_path
+    global x, y, z, u, t, a, b, c, m, n, history, expr_replace, graph_replace, save_path
 
     while True:
         instruct_path = (
@@ -1213,17 +1296,13 @@ def main():
             settings()
 
         elif cmd == "7":
-            print("\n[bright_yellow]Exiting Calc-ULTRA ... ... ...[/bright_yellow]\n")
+            print("\n[bright_yellow]Exiting Calc-Ultra ... ... ...[/bright_yellow]\n")
             break
 
         else:
             print()
             warning(f'Invalid command:"{cmd}"\n')
-
-
-"""
-If you find this message, type 'hi' in the general discussions - sudoer-Huatao
-"""
+            continue_press()
 
 
 def derivacalc():
@@ -1233,16 +1312,16 @@ def derivacalc():
 
         for line in derivacalc.readlines():
             line = line.rstrip()
-            if line.startswith(" "):
-                nprint(f"[gold1]{line}[/gold1]")
+            if line.startswith("Derivative"):
+                nprint(Panel(Text(line, justify="center"), style="gold1"))
+            elif line == "Commands:":
+                nprint(f"[purple]{line}[/purple]")
             else:
                 nprint(line)
 
-        print()
-
         try:
             print(
-                "[bold bright_green](Current Screen: DerivaCalc Main Screen)[/bold bright_green]\n"
+                "[bold bright_green](Current Screen: Derivative Calculator Main Screen)[/bold bright_green]\n"
             )
             print("[purple]Enter Command: [/purple]", end="")
             cmd = input()
@@ -1258,7 +1337,7 @@ def derivacalc():
 
                 derive(function, order)
 
-                input("\nPress any key to continue: ")
+                continue_press()
 
             elif cmd == "2":
                 print(
@@ -1285,7 +1364,7 @@ def derivacalc():
 
                     partial_derive(function, var, order)
 
-                    input("\nPress any key to continue: ")
+                    continue_press()
 
             elif cmd == "3":
                 print(
@@ -1301,21 +1380,42 @@ def derivacalc():
 
                 implicit_derive(circ, order)
 
-                input("\nPress any key to continue: ")
+                continue_press()
 
             elif cmd == "4":
-                print("\n[bright_yellow]Exiting DerivaCalc ...[/bright_yellow]")
+                print(
+                    "\n[bold bright_green](Current Screen: Extrema Calculation Screen)[/bold bright_green]\n"
+                )
+                print('(Press "q" to quit). Enter a function: ', end="")
+
+                while True:
+                    function = prompt(
+                        key_bindings=key_bindings,
+                    )
+                    if function != "q":
+                        extrema(function)
+                    else:
+                        print()
+                        break
+
+                continue_press()
+
+            elif cmd == "5":
+                print(
+                    "\n[bright_yellow]Exiting Derivative Calculator ...[/bright_yellow]"
+                )
                 break
 
             else:
                 print()
                 warning(f'Invalid command:"{cmd}"')
-                print()
+                continue_press()
 
         except:
             print()
             error("An unknown error occured.")
             print("[bold bright_red]Check if your input is valid.[/bold bright_red]\n")
+            continue_press()
 
 
 def intecalc():
@@ -1325,16 +1425,16 @@ def intecalc():
 
         for line in intecalc.readlines():
             line = line.rstrip()
-            if line.startswith(" "):
-                nprint(f"[gold1]{line}[/gold1]")
+            if line.startswith("Integral"):
+                nprint(Panel(Text(line, justify="center"), style="gold1"))
+            elif line == "Commands:":
+                nprint(f"[purple]{line}[/purple]")
             else:
                 nprint(line)
 
-        print()
-
         try:
             print(
-                "[bold bright_green](Current Screen: InteCalc Main Screen)[/bold bright_green]\n"
+                "[bold bright_green](Current Screen: Integral Calculator Main Screen)[/bold bright_green]\n"
             )
             print("[purple]Enter Command: [/purple]", end="")
             cmd = input()
@@ -1347,7 +1447,7 @@ def intecalc():
 
                 antiderive(function)
 
-                input("\nPress any key to continue: ")
+                continue_press()
 
             elif cmd == "2":
                 print(
@@ -1363,7 +1463,7 @@ def intecalc():
 
                 print(def_int(function, lower_bound, upper_bound))
 
-                input("\nPress any key to continue: ")
+                continue_press()
 
             elif cmd == "3":
                 print(
@@ -1379,7 +1479,7 @@ def intecalc():
 
                 improp_int(function, lower_bound, upper_bound)
 
-                input("\nPress any key to continue: ")
+                continue_press()
 
             elif cmd == "4":
                 print(
@@ -1401,20 +1501,24 @@ def intecalc():
 
                 double_int(function, outer_low, outer_up, inner_low, inner_up)
 
-                input("\nPress any key to continue: ")
+                continue_press()
 
             elif cmd == "5":
-                print("\n[bright_yellow]Exiting InteCalc ...[/bright_yellow]")
+                print(
+                    "\n[bright_yellow]Exiting Integral Calculator ...[/bright_yellow]"
+                )
                 break
 
             else:
                 print()
                 warning(f'Invalid command: "{cmd}"')
+                continue_press()
 
         except:
             print()
             error("An unknown error occured.")
             print("[bold bright_red]Check if your input is valid.[/bold bright_red]\n")
+            continue_press()
 
 
 def limcalc():
@@ -1424,8 +1528,10 @@ def limcalc():
 
         for line in limcalc.readlines():
             line = line.rstrip()
-            if line.startswith(" "):
-                nprint(f"[gold1]{line}[/gold1]")
+            if line.startswith("Limit"):
+                nprint(Panel(Text(line, justify="center"), style="gold1"))
+            elif line == "Commands:":
+                nprint(f"[purple]{line}[/purple]")
             else:
                 nprint(line)
 
@@ -1433,7 +1539,7 @@ def limcalc():
 
         try:
             print(
-                "\n[bold bright_green](Current Screen: LimCalc Main Screen)[/bold bright_green]\n"
+                "\n[bold bright_green](Current Screen: Limit Calculator Main Screen)[/bold bright_green]\n"
             )
             print("[purple]Enter Command: [/purple]", end="")
             cmd = input()
@@ -1447,7 +1553,7 @@ def limcalc():
 
                 lim(expr, value)
 
-                input("\nPress any key to continue: ")
+                continue_press()
 
             elif cmd == "2":
                 print(
@@ -1459,20 +1565,22 @@ def limcalc():
 
                 side_lim(expr, value, direction)
 
-                input("\nPress any key to continue: ")
+                continue_press()
 
             elif cmd == "3":
-                print("\n[bright_yellow]Exiting LimCalc ...[/bright_yellow]")
+                print("\n[bright_yellow]Exiting Limit Calculator ...[/bright_yellow]")
                 break
 
             else:
                 print()
                 warning(f'Invalid command: "{cmd}"')
+                continue_press()
 
         except:
             print()
             error("An unknown error occured.")
             print("[bold bright_red]Check if your input is valid.[/bold bright_red]\n")
+            continue_press()
 
 
 def algcalc():
@@ -1482,15 +1590,17 @@ def algcalc():
 
         for line in algcalc.readlines():
             line = line.rstrip()
-            if line.startswith(" "):
-                nprint(f"[gold1]{line}[/gold1]")
+            if line.startswith("Algebra"):
+                nprint(Panel(Text(line, justify="center"), style="gold1"))
+            elif line == "Commands:":
+                nprint(f"[purple]{line}[/purple]")
             else:
                 nprint(line)
 
         print()
         try:
             print(
-                "\n[bold bright_green](Current Screen: AlgCalc Main Screen)[/bold bright_green]\n"
+                "\n[bold bright_green](Current Screen: Algebra Calculator Main Screen)[/bold bright_green]\n"
             )
             print("[purple]Enter Command: [/purple]", end="")
             cmd = input()
@@ -1507,7 +1617,14 @@ def algcalc():
                         end="",
                     )
                     mode = input()
-                    eq_solve(mode)
+
+                    try:
+                        eq_solve(mode)
+
+                    except:
+                        print()
+                        error("Could not solve equation.")
+                        print()
 
             elif cmd == "2":
                 print(
@@ -1526,6 +1643,7 @@ def algcalc():
 
                 while True:
                     expr = prompt(key_bindings=key_bindings)
+
                     try:
                         if expr != "q":
                             expr = (
@@ -1539,11 +1657,12 @@ def algcalc():
                             ).replace(" ", "")
                             result = eval(replace_graph(expr))
                             print("\n[bright_yellow]Result: [/bright_yellow]", end="")
-                            pprint(result)
+                            print_expr(result)
                             print()
 
                         else:
                             break
+
                     except:
                         error(f'Could not parse: "{expr}"\n')
 
@@ -1565,6 +1684,7 @@ def algcalc():
 
                 while True:
                     expr = prompt(key_bindings=key_bindings)
+
                     try:
                         if expr != "q":
                             expr = (
@@ -1578,27 +1698,52 @@ def algcalc():
                             ).replace(" ", "")
                             result = eval(replace_graph(expr))
                             print("\n[bright_yellow]Result: [/bright_yellow]\n")
-                            pprint(result)
+                            print_expr(result)
                             print()
 
                         else:
                             break
+
                     except:
                         print()
                         error(f'Could not parse: "{expr}"\n')
 
             elif cmd == "4":
-                print("\n[bright_yellow]Exiting AlgCalc ...[/bright_yellow]")
+                print(
+                    "\n[bold bright_green](Current screen: Taylor Polynomial Approximation Screen)[/bold bright_green]\n"
+                )
+                function = prompt("Enter a function: ", key_bindings=key_bindings)
+                order = int(
+                    prompt(
+                        "Enter order of Taylor Polynomial: ", key_bindings=key_bindings
+                    )
+                )
+                a = prompt(
+                    "Enter x-coordinate of a point of the function (an easily evaluated point works best): ",
+                    key_bindings=key_bindings,
+                )
+                point = prompt(
+                    "Enter point of approximation (i.e., a point near x=a for the function): ",
+                    key_bindings=key_bindings,
+                )
+
+                generate_taylor(function, order, a, point)
+                continue_press()
+
+            elif cmd == "5":
+                print("\n[bright_yellow]Exiting Algebra Calculator ...[/bright_yellow]")
                 break
 
             else:
                 print()
                 warning(f'Invalid command: "{cmd}"')
+                continue_press()
 
         except:
             print()
             error("An unknown error occured.")
             print("[bold bright_red]Check if your input is valid.[/bold bright_red]\n")
+            continue_press()
 
 
 def settings():
@@ -1610,6 +1755,8 @@ def settings():
             line = line.rstrip()
             if line.startswith(" "):
                 nprint(f"[gold1]{line}[/gold1]")
+            elif line == "Commands:":
+                nprint(f"[purple]{line}[/purple]")
             else:
                 nprint(line)
 
@@ -1677,7 +1824,8 @@ def settings():
                     print(f"\nPath saved to: {save_path}.")
 
                 else:
-                    warning("\nThe path you specificied does not exist.")
+                    print()
+                    warning("The path you specificied does not exist.")
 
         elif cmd == "exit":
             print("\n[bright_yellow]Exiting settings ... ... ...[/bright_yellow]")
@@ -1686,6 +1834,7 @@ def settings():
         else:
             print()
             warning(f'Invalid command:"{cmd}"')
+            continue_press()
 
 
 if __name__ != "__main__":
