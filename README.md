@@ -1,12 +1,12 @@
 # Calc-Ultra
 
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.3.8-blue.svg)](https://pypi.org/project/calc-ultra/)
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.3.9-blue.svg)](https://pypi.org/project/calc-ultra/)
 
 > **Advanced math made easy**
 
 (Turn on dark mode for a better aesthetic) 📲
 
-Calc-Ultra (styled as CALC ULTRA) is a multi-functional calculator that uses a command-line/menu-based interface. Little Python background knowledge is needed to use this calculator! (Please star the GitHub repo if you find this project helpful! ❤️)
+Calc-Ultra is a multi-functional graphing calculator that uses a menu-based interface. Little Python background knowledge is needed to use this calculator! (Please star the GitHub repo if you find this project helpful! ❤️)
 
 Supports:
 
@@ -23,6 +23,9 @@ Supports:
 - Solving (sets) of equation(s)
 - Vector/matrix operations
 - Taylor Polynomial Approximations
+- Expression Simplifier
+- Grapher
+- Arc Length Calculator
 - **A perfect interface to do calculations!**  
 
 ## Chinese version
@@ -76,16 +79,7 @@ The following contributors deserve a SPECIAL THANK-YOU 👍❤️:
 
 This program was made using `sympy` for calculation and `numpy`, `scipy`, and `matplotlib` for graphing.
 
-## New Features Demo
-
-Taylor Approximation demo: (VS Code)
-![taylor](https://github.com/user-attachments/assets/680a33dc-2900-43af-99f0-f0f9803a10e0)
-
-
-Extrema calculator demo: (VS Code)
-![extrema](https://github.com/user-attachments/assets/7132c094-f705-4ab4-a1ae-57aa2cdd1d74)
-
-For more info, check the changelog.
+For more info about the current build, check the changelog.
 
 ## License
 
