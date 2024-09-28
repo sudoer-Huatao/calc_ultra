@@ -6,6 +6,8 @@
 from rich import print
 from rich.text import Text
 from rich.panel import Panel
+from rich.style import Style
+from rich.console import Console
 
 print(
     "\n[bright_yellow]Initializing Calc-Ultra. Might take some time on first startup ...[/bright_yellow]"
@@ -31,6 +33,8 @@ from numpy import (
     arctanh,
     array,
     cross,
+    arange,
+    meshgrid,
 )
 from numpy.linalg import norm, det
 from sympy import (
@@ -54,6 +58,7 @@ from sympy import re as real
 from sympy.core.numbers import pi, E, EulerGamma, I, oo, zoo
 import scipy.special as ss
 from scipy.special import polygamma, gammainc, gammaincc, erf, erfc
+from scipy import optimize
 from rich.progress import (
     Progress,
     SpinnerColumn,
@@ -83,9 +88,29 @@ filterwarnings("ignore")
 
 parse_and_bind("tab: complete")
 
-x, y, z, u, t, a, b, c, m, n = symbols("x, y, z, u, t, a, b, c, m, n")
+x, y, z = symbols("x, y, z")
+
+console = Console()
 
 history = [""]  # Stores calculation history
+
+graphs = []  # Functions to graph
+implicits = []  # Implicit functions
+
+colors = [
+    "red",
+    "blue",
+    "seagreen",
+    "black",
+    "magenta",
+    "orange",
+    "gold",
+    "cyan",
+    "brown",
+    "lime",
+    "plum",
+    "midnightblue",
+]  # Function colors
 
 key_bindings = KeyBindings()
 
@@ -95,7 +120,11 @@ save_path = dirname(abspath(__file__)) + "/fig.pdf"
 
 expr_replace = [
     ("inf", "oo"),
+    ("sum", "Sum"),
     (")(", ")*("),
+    ("xs", "x*s"),
+    ("xe", "x*e"),
+    ("xl", "x*l"),
     ("E", "E1"),
     ("e", "E1"),
     # The extra 1 at the end is to recognize whether the "e"
@@ -122,6 +151,7 @@ graph_replace = [
     ("asin", "arcsin"),
     ("acos", "arccos"),
     ("atan", "arctan"),
+    ("Abs", "abs"),
     ("gamma", "ss.gamma"),
     ("polyss.gamma", "polygamma"),
     ("lowergamma", "gammainc"),
@@ -180,8 +210,9 @@ def _(event):
 
 @key_bindings.add("c-c")
 def _(event):
-    global history
+    global history, graphs
     history = [""]
+    graphs.clear()
 
 
 #####################
@@ -191,21 +222,29 @@ def _(event):
 
 def simp():
     print(
-        '\n[bold bright_green](Current Screen: Simple Calculation Screen)[/bold bright_green]\n\n("q" to quit, Control + C to clear history)\n\nEnter any expression:\n'
+        '\n[bold bright_green](Current Screen: Simple Calculation Screen)[/bold bright_green]\n\n("q" to quit, Control + C to clear history)\n'
+    )
+    print(
+        "\nFor sums, write as sum(any function, (dummy var, lower bound, upper bound))\nEnter any expression:\n"
     )
 
     while True:
+        console.print(
+            "expr=",
+            style=Style(color="white", dim=True, blink=True),
+            end="",
+            highlight=False,
+        )
         expr = prompt(key_bindings=key_bindings)
 
         if expr != "q":
             # Easy to exit unlike VIM ;)
             expr = expr.replace(" ", "")
+            try:
+                if "?=" in expr:
+                    left = replace_expr(expr[: expr.find("?=")])
+                    right = replace_expr(expr[expr.find("?=") + 2 :])
 
-            if "?=" in expr:
-                left = replace_expr(expr[: expr.find("?=")])
-                right = replace_expr(expr[expr.find("?=") + 2 :])
-
-                if "x" in left or "x" in right:
                     equals = "True."
 
                     if simplify(left) != simplify(right):
@@ -220,47 +259,37 @@ def simp():
 
                             if left_result != right_result:
                                 equals = "False."
+                                print(left_result, right_result)
                                 break
 
-                    print(f"\n{equals}\n")
+                        print(f"\n{equals}\n")
 
                 else:
-                    left = round(left)
-                    right = round(right)
+                    result = simplify(
+                        replace_expr(expr)
+                        .replace("3.141592653589793", "pi")
+                        .replace("2.718281828459045", "E1")
+                    )
 
-                    if str(left).endswith("0") and left != 0:
-                        left = str(left).rstrip("0")
-
-                    if str(right).endswith("0") and right != 0:
-                        right = str(right).rstrip("0")
-
-                    if left == right:
-                        print("\nTrue.\n")
+                    if result == None:
+                        print()
+                        error("Could not complete calculation.")
+                        print()
 
                     else:
-                        print(
-                            "\nFalse.\n\nLeft side: "
-                            + str(left)
-                            + ". Right side: "
-                            + str(right)
-                            + ".\n"
-                        )
+                        if history[len(history) - 1] != str(result) and result != None:
+                            history.append(str(result))
 
-            else:
-                result = round(replace_expr(expr))
+                        print("\n[bright_yellow]Symbolic result: [/bright_yellow]")
+                        print_expr(result)
+                        print("\n[bright_yellow]Numerical result: [/bright_yellow]")
+                        print_expr(result.evalf())
+                        print()
 
-                if result == None:
-                    print()
-                    error("Could not complete calculation.")
-                    print()
-
-                else:
-                    if history[len(history) - 1] != str(result) and result != None:
-                        history.append(str(result))
-
-                    print("\n[bright_yellow]Result: [/bright_yellow]", end="")
-                    print_expr(result)
-                    print()
+            except Exception as e:
+                print()
+                error(f"An error occurred during calculation: {e}.")
+                print()
 
         else:
             break
@@ -282,11 +311,11 @@ def derive(function: str, order: str):
     if check_order(order) == False:
         return ""
 
-    global df
     df = diff(calc, x, order)
+    df = simplify(extend_log(str(df)))
 
     print(
-        f"\nDerivative of [bright_magenta]{replace_graph(function)}[/bright_magenta] with order {order} is:\n"
+        f"\nDerivative of [bright_magenta]{function}[/bright_magenta] with order {order} is:\n"
     )
     print_expr(df)
 
@@ -295,8 +324,6 @@ def derive(function: str, order: str):
 
     if history[len(history) - 1] != df:
         history.append(df)
-
-    df = replace_graph(df)
 
     print("\n[bright_yellow]Show graph of area? (y/n)[/bright_yellow]")
     show = input("(Exit the graph window when you are finished to continue) ")
@@ -342,12 +369,12 @@ def derive(function: str, order: str):
                 print("\nDownloaded graph.")
 
             plt.show()
-            print("\nExited graph.")
+            print("\nExited graph.\n")
 
         except:
             plt.close()
             warning("Could not graph function.")
-            print("\nExited graph.")
+            print("\nExited graph.\n")
 
 
 def partial_derive(function: str, var: str, order: str):
@@ -367,9 +394,10 @@ def partial_derive(function: str, var: str, order: str):
         return ""
 
     df = diff(calc, var, order)
+    df = simplify(extend_log(str(df)))
 
     print(
-        f"\nPartial derivative of [bright_magenta]{replace_graph(function)}[/bright_magenta] in respect to {var} of order {order} is:\n"
+        f"\nPartial derivative of [bright_magenta]{function}[/bright_magenta] in respect to {var} of order {order} is:\n"
     )
     print_expr(df)
 
@@ -398,6 +426,7 @@ def implicit_derive(circ: str, order: str):
         return ""
 
     df = idiff(left - right, y, x, order)
+    df = simplify(extend_log(str(df)))
 
     print(
         f"\nDerivative of [bright_magenta]{circ}[/bright_magenta] with order {order} is:\n"
@@ -462,6 +491,7 @@ def antiderive(function: str):
     """
 
     calc = replace_expr(function)
+
     F = Integral(calc, x).doit()
 
     if "Integral" in str(F):
@@ -469,9 +499,9 @@ def antiderive(function: str):
         warning("Cannot compute integral.")
         return ""
 
-    print(
-        f"\nAntiderivative of [bright_magenta]{replace_graph(function)}[/bright_magenta] is:\n"
-    )
+    F = simplify(extend_log(str(F)))
+
+    print(f"\nAntiderivative of [bright_magenta]{function}[/bright_magenta] is:\n")
     print_expr(F)
 
     F = replace_expr(str(F))
@@ -480,7 +510,7 @@ def antiderive(function: str):
     if history[len(history) - 1] != F:
         history.append(F)
 
-    F = replace_graph(F)
+    F = replace_graph(extend_log(F))
 
     print("\n[bold]Don't forget to add a constant![/bold]")
 
@@ -576,7 +606,7 @@ def def_int(function: str, low: str, up: str):
             return ""
 
         print(
-            f"\nCalculated integral of [bright_magenta]{replace_graph(function)}[/bright_magenta] from {low} to {up}. Final area is:\n"
+            f"\nCalculated integral of [bright_magenta]{extend_log(function)}[/bright_magenta] from {low} to {up}. Final area is:\n"
         )
         print_expr(result)
         result = replace_expr(result)
@@ -745,15 +775,6 @@ def improp_int(function: str, low: str, up: str):
             warning("Cannot compute improper integral.\n")
             return ""
 
-        print(
-            f"\nCalculated improper integral of [bright_magenta]{function}[/bright_magenta] from {low} to {up}. Final area is:\n"
-        )
-        print_expr(improper_area)
-        improper_area = replace_expr(str(improper_area))
-
-        if history[len(history) - 1] != improper_area:
-            history.append(improper_area)
-
     except ValueError:
         improper_area = integrate(function, (x, calc_low, calc_up))
 
@@ -761,10 +782,12 @@ def improp_int(function: str, low: str, up: str):
             warning("Cannot compute improper integral.\n")
             return ""
 
+    finally:
         print(
             f"\nCalculated improper integral of [bright_magenta]{function}[/bright_magenta] from {low} to {up}. Final area is:\n"
         )
         print_expr(improper_area)
+        print()
         improper_area = replace_expr(str(improper_area))
 
         if history[len(history) - 1] != improper_area:
@@ -921,8 +944,8 @@ def eq_solve(mode: str):
 
     if mode == "1":
         eq1 = prompt("\nEnter equation: ", key_bindings=key_bindings)
-        left = simplify(eq1[: eq1.find("=")])
-        right = simplify(eq1[eq1.find("=") + 1 :])
+        left = simplify(replace_expr(eq1[: eq1.find("=")]))
+        right = simplify(replace_expr(eq1[eq1.find("=") + 1 :]))
         eq_set = solve(left - right)
         if len(eq_set) == 0:
             print()
@@ -941,12 +964,12 @@ def eq_solve(mode: str):
 
     elif mode == "2":
         eq1 = input("Enter first equation: ")
-        left1 = simplify(eq1[: eq1.find("=")])
-        right1 = simplify(eq1[eq1.find("=") + 1 :])
+        left1 = simplify(replace_expr(eq1[: eq1.find("=")]))
+        right1 = simplify(replace_expr(eq1[eq1.find("=") + 1 :]))
 
         eq2 = input("Enter second equation: ")
-        left2 = simplify(eq2[: eq2.find("=")])
-        right2 = simplify(eq2[eq2.find("=") + 1 :])
+        left2 = simplify(replace_expr(eq2[: eq2.find("=")]))
+        right2 = simplify(replace_expr(eq2[eq2.find("=") + 1 :]))
 
         eq_set = str(linsolve((left1 - right1, left2 - right2), (x, y), (-1, 1)))
         eqs = eq_set.strip("{").strip("}").strip("(").strip(")")
@@ -959,16 +982,16 @@ def eq_solve(mode: str):
 
     elif mode == "3":
         eq1 = input("Enter equation 1: ")
-        left1 = simplify(eq1[: eq1.find("=")])
-        right1 = simplify(eq1[eq1.find("=") + 1 :])
+        left1 = simplify(replace_expr(eq1[: eq1.find("=")]))
+        right1 = simplify(replace_expr(eq1[eq1.find("=") + 1 :]))
 
         eq2 = input("Enter equation 2: ")
-        left2 = simplify(eq2[: eq2.find("=")])
-        right2 = simplify(eq2[eq2.find("=") + 1 :])
+        left2 = simplify(replace_expr(eq2[: eq2.find("=")]))
+        right2 = simplify(replace_expr(eq2[eq2.find("=") + 1 :]))
 
         eq3 = input("Enter equation 3: ")
-        left3 = simplify(eq3[: eq3.find("=")])
-        right3 = simplify(eq3[eq3.find("=") + 1 :])
+        left3 = simplify(replace_expr(eq3[: eq3.find("=")]))
+        right3 = simplify(replace_expr(eq3[eq3.find("=") + 1 :]))
 
         eq_set = str(
             linsolve(
@@ -1042,7 +1065,7 @@ def check_simp(expr: str) -> bool:
     """
 
     try:
-        if str(simplify(expr, evaluate=False)).replace(" ", "") != expr:
+        if str(simplify(expr, evaluate=False)).replace(" ", "").lower() != expr:
             print("\nSimplify/rewrite:\n")
             print_expr(simplify(expr, evaluate=False))
 
@@ -1093,12 +1116,11 @@ def check_num(num: str):
         and ("." not in num)
         and ("sqrt" not in num)
         and ("oo" not in num)
+        and ("inf" not in num)
         and ("/" not in num)
         and ("x" not in num)
         and ("y" not in num)
         and ("z" not in num)
-        and ("t" not in num)
-        and ("m" not in num)
     ):
         print()
         error("Invalid integration bound/numerical expression.")
@@ -1117,22 +1139,11 @@ def replace_expr(expr: str) -> str:
     """
 
     expr = expr.replace(" ", "")
+    expr = expr.lower()
     expr = re.sub(r"(\d)([a-zA-Z\(])", r"\1*\2", expr)
 
     for r in expr_replace:
         expr = expr.replace(*r)
-
-    expr = re.sub(r"acsch\((.*?)\)", r"asinh(1/(\1))", expr)
-    expr = re.sub(r"asech\((.*?)\)", r"acosh(1/(\1))", expr)
-    expr = re.sub(r"acoth\((.*?)\)", r"atanh(1/(\1))", expr)
-
-    expr = re.sub(r"acsc\((.*?)\)", r"asin(1/(\1))", expr)
-    expr = re.sub(r"asec\((.*?)\)", r"acos(1/(\1))", expr)
-    expr = re.sub(r"acot\((.*?)\)", r"atan(1/(\1))", expr)
-
-    expr = re.sub(r"csc\((.*?)\)", r"(1/sin(\1))", expr)
-    expr = re.sub(r"sec\((.*?)\)", r"(1/cos(\1))", expr)
-    expr = re.sub(r"cot\((.*?)\)", r"(1/tan(\1))", expr)
 
     return expr
 
@@ -1153,6 +1164,46 @@ def replace_graph(function: str) -> str:
 
     for r in graph_replace:
         function = function.replace(*r)
+
+    return function
+
+
+def extend_log(function: str) -> str:
+    r"""Extend domain of natural log.
+
+    Explanation
+    ===========
+
+    Turn functions like log(sin(x)+1) into log(abs(sin(x)+1)).
+    """
+
+    start_index = 0
+    while True:
+        start_index = function.find("log(", start_index)
+        if start_index == -1:
+            break
+
+        end_index = -1
+        open = 1
+
+        for i in range(start_index + 4, len(function)):
+            if function[i] == "(":
+                open += 1
+            elif function[i] == ")":
+                open -= 1
+                if open == 0:
+                    end_index = i
+                    break
+
+        if end_index != -1:
+            function = (
+                function[: start_index + 4]
+                + "abs("
+                + function[start_index + 4 : end_index]
+                + ")"
+                + function[end_index:]
+            )
+            start_index = end_index + 1
 
     return function
 
@@ -1205,6 +1256,11 @@ def print_expr(text: str):
         printing_methods["p"](text)
 
 
+################################
+# Implementations of functions #
+################################
+
+
 def factorial(x):
     r"""
     Simple implementation of a factorial function,
@@ -1213,6 +1269,54 @@ def factorial(x):
     """
 
     return ss.gamma(x + 1)
+
+
+def csc(x):
+    return 1 / sin(x)
+
+
+def sec(x):
+    return 1 / cos(x)
+
+
+def cot(x):
+    return 1 / tan(x)
+
+
+def csch(x):
+    return 1 / sinh(x)
+
+
+def sech(x):
+    return 1 / cosh(x)
+
+
+def coth(x):
+    return 1 / tanh(x)
+
+
+def acsc(x):
+    return arcsin(1 / (x))
+
+
+def asec(x):
+    return arccos(1 / (x))
+
+
+def acot(x):
+    return arctan(1 / (x))
+
+
+def acsch(x):
+    return arcsinh(1 / (x))
+
+
+def asech(x):
+    return arccosh(1 / (x))
+
+
+def acoth(x):
+    return arctanh(1 / (x))
 
 
 def nprint(text: str):
@@ -1290,7 +1394,7 @@ def main():
             limcalc()
 
         elif cmd == "5":
-            algcalc()
+            utils()
 
         elif cmd == "6":
             settings()
@@ -1389,6 +1493,12 @@ def derivacalc():
                 print('(Press "q" to quit). Enter a function: ', end="")
 
                 while True:
+                    console.print(
+                        "func=",
+                        style=Style(color="white", dim=True, blink=True),
+                        end="",
+                        highlight=False,
+                    )
                     function = prompt(
                         key_bindings=key_bindings,
                     )
@@ -1411,9 +1521,9 @@ def derivacalc():
                 warning(f'Invalid command:"{cmd}"')
                 continue_press()
 
-        except:
+        except Exception as e:
             print()
-            error("An unknown error occured.")
+            error(f"An unknown error occured: {e}.")
             print("[bold bright_red]Check if your input is valid.[/bold bright_red]\n")
             continue_press()
 
@@ -1514,9 +1624,9 @@ def intecalc():
                 warning(f'Invalid command: "{cmd}"')
                 continue_press()
 
-        except:
+        except Exception as e:
             print()
-            error("An unknown error occured.")
+            error(f"An unknown error occured: {e}.")
             print("[bold bright_red]Check if your input is valid.[/bold bright_red]\n")
             continue_press()
 
@@ -1576,21 +1686,21 @@ def limcalc():
                 warning(f'Invalid command: "{cmd}"')
                 continue_press()
 
-        except:
+        except Exception as e:
             print()
-            error("An unknown error occured.")
+            error(f"An unknown error occured: {e}.")
             print("[bold bright_red]Check if your input is valid.[/bold bright_red]\n")
             continue_press()
 
 
-def algcalc():
+def utils():
     while True:
-        instruct_path = dirname(abspath(__file__)) + "/texts/algcalc.txt"
-        algcalc = open(instruct_path, mode="r")
+        instruct_path = dirname(abspath(__file__)) + "/texts/utils.txt"
+        utils = open(instruct_path, mode="r")
 
-        for line in algcalc.readlines():
+        for line in utils.readlines():
             line = line.rstrip()
-            if line.startswith("Algebra"):
+            if line.startswith("Other"):
                 nprint(Panel(Text(line, justify="center"), style="gold1"))
             elif line == "Commands:":
                 nprint(f"[purple]{line}[/purple]")
@@ -1600,7 +1710,7 @@ def algcalc():
         print()
         try:
             print(
-                "\n[bold bright_green](Current Screen: Algebra Calculator Main Screen)[/bold bright_green]\n"
+                "\n[bold bright_green](Current Screen: Other Utilities Main Screen)[/bold bright_green]\n"
             )
             print("[purple]Enter Command: [/purple]", end="")
             cmd = input()
@@ -1642,6 +1752,12 @@ def algcalc():
                 print('Enter any expression to start ("q" to quit):\n')
 
                 while True:
+                    console.print(
+                        "expr=",
+                        style=Style(color="white", dim=True, blink=True),
+                        end="",
+                        highlight=False,
+                    )
                     expr = prompt(key_bindings=key_bindings)
 
                     try:
@@ -1683,6 +1799,12 @@ def algcalc():
                 print('Enter any expression to start ("q" to quit):\n')
 
                 while True:
+                    console.print(
+                        "expr=",
+                        style=Style(color="white", dim=True, blink=True),
+                        end="",
+                        highlight=False,
+                    )
                     expr = prompt(key_bindings=key_bindings)
 
                     try:
@@ -1731,6 +1853,173 @@ def algcalc():
                 continue_press()
 
             elif cmd == "5":
+                print(
+                    "\n[bold bright_green](Current screen: Expression Simplifier Screen)[/bold bright_green]\n"
+                )
+                print('(Press "q" to quit)\nEnter any expression:\n')
+
+                while True:
+                    console.print(
+                        "expr=",
+                        style=Style(color="white", dim=True, blink=True),
+                        end="",
+                        highlight=False,
+                    )
+                    expr = prompt(key_bindings=key_bindings)
+                    if expr == "q":
+                        break
+                    else:
+                        try:
+                            result = simplify(replace_expr(expr))
+                            print(f"\nSimplified {expr}:\n")
+                            print_expr(result)
+                            result = str(result)
+                            if history[len(history) - 1] != result:
+                                history.append(result)
+                            print()
+                        except:
+                            error("Invalid expression.")
+                            print()
+            elif cmd == "6":
+                print(
+                    "\n[bold bright_green](Current screen: Grapher Screen)[/bold bright_green]\n"
+                )
+                print(
+                    '\nEnter any expression (to graph, enter "g". Exit the graph when you are done. Enter "q" to quit, Control+C to clear entered functions.):\n'
+                )
+                print(
+                    "You can also enter multiple functions at once, separated by commas.\n"
+                )
+
+                while True:
+                    console.print(
+                        "expr=",
+                        style=Style(color="white", dim=True, blink=True),
+                        end="",
+                        highlight=False,
+                    )
+                    expr = prompt(key_bindings=key_bindings)
+                    if expr == "q":
+                        break
+                    elif expr == "g":
+                        try:
+                            print()
+                            with Progress(
+                                SpinnerColumn(
+                                    finished_text="[bright_green]√[/bright_green]"
+                                ),
+                                TextColumn(
+                                    "[bright_yellow]Loading graphs...[/bright_yellow]"
+                                ),
+                                BarColumn(),
+                                TimeElapsedColumn(),
+                                transient=False,
+                            ) as progress:
+                                task = progress.add_task("", total=100)
+
+                                while not progress.finished:
+                                    progress.update(task, advance=2)
+                                    sleep(randint(2, 5) / 1000)
+
+                            x_arr = linspace(-100, 100, 200000)
+                            title = "Graphed functions"
+                            plt.title(title)
+                            plt.xlabel("x", weight="bold")
+                            plt.ylabel("y", rotation=0, weight="bold")
+                            color = 0
+                            if len(graphs) != 0:
+                                for func in graphs:
+
+                                    def f(x: array):
+                                        return eval(func)
+
+                                    plt.plot(
+                                        x_arr,
+                                        f(x_arr),
+                                        color=colors[color],
+                                        label=replace_graph(func),
+                                    )
+                                    color = (color + 1) % len(colors)
+
+                            if len(implicits) != 0:
+                                for i in range(len(implicits)):
+                                    plt.contour(
+                                        implicits[i][0],
+                                        implicits[i][1],
+                                        eval(implicits[i][2]),
+                                        [0],
+                                    )
+
+                            plt.axis([-7.5, 7.5, -7.5, 7.5])
+                            plt.legend(loc="lower left")
+                            plt.grid()
+
+                            download = input("Download graph? (y/n) ")
+
+                            if download == "y":
+                                plt.savefig(save_path)
+                                print("\nDownloaded graph.")
+
+                            plt.show()
+                            print("\nExited graph.\n")
+
+                        except:
+                            plt.close()
+                            warning("Could not graph function.")
+                            print("\nExited graph.\n")
+                            graphs.clear()
+
+                    else:
+                        expr = replace_expr(expr)
+                        try:
+                            if "=" in expr:
+                                parts = expr.split("=")
+                                expr = parts[0] + f"-({parts[1]})"
+                                xrange = arange(-100, 100, 0.03)
+                                yrange = arange(-100, 100, 0.03)
+                                x, y = meshgrid(xrange, yrange)
+                                implicits.append([x, y, expr])
+                                print()
+
+                            else:
+                                expr = replace_graph(replace_expr(expr))
+                                if "," in expr:
+                                    expr = expr.split(",")
+                                    print(expr)
+                                    for ele in expr:
+                                        graphs.append(ele)
+                                else:
+                                    graphs.append(expr)
+                                print()
+                        except:
+                            error("Invalid expression.")
+                            print()
+
+            elif cmd == "7":
+                print(
+                    "\n[bold bright_green](Current Screen: Arc Length Calculator Screen)[/bold bright_green]\n"
+                )
+                expr = replace_expr(
+                    prompt("Enter a function: ", key_bindings=key_bindings)
+                )
+                left = simplify(
+                    replace_expr(
+                        prompt("Enter left bound of curve: ", key_bindings=key_bindings)
+                    )
+                ).evalf()
+                right = simplify(
+                    replace_expr(
+                        prompt(
+                            "Enter right bound of curve: ", key_bindings=key_bindings
+                        )
+                    )
+                ).evalf()
+                arc_len = integrate(
+                    "sqrt(" + str(diff(expr, x)) + "**2+1)", (x, left, right)
+                ).evalf()
+                print(f"\nArc Length: {arc_len}\n")
+
+            elif cmd == "8":
                 print("\n[bright_yellow]Exiting Algebra Calculator ...[/bright_yellow]")
                 break
 
@@ -1739,9 +2028,9 @@ def algcalc():
                 warning(f'Invalid command: "{cmd}"')
                 continue_press()
 
-        except:
+        except Exception as e:
             print()
-            error("An unknown error occured.")
+            error(f"An unknown error occured: {e}.")
             print("[bold bright_red]Check if your input is valid.[/bold bright_red]\n")
             continue_press()
 
