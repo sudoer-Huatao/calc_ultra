@@ -1,6 +1,6 @@
 # Calc-Ultra
 
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.3.9-blue.svg)](https://pypi.org/project/calc-ultra/)
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/) [![Version](https://img.shields.io/badge/Version-1.3.9.1-blue.svg)](https://pypi.org/project/calc-ultra/)
 
 > **Advanced math made easy**
 
@@ -30,29 +30,15 @@ Supports:
 
 ## Chinese version
 
-Want to check out the Chinese version? Visit the Chinese version [here](https://github.com/sudoer-Huatao/calc_ultra-chinese) (Work in progress)! 🇨🇳
+Want to check out the Chinese version? Visit the Chinese version [here (WORK IN PROGRESS)](https://github.com/sudoer-Huatao/calc_ultra-chinese) 🇨🇳
 
 ## Installation and Running
 
 > Run the calculus calculator with a single line of code
 
-Use the following command to install Calc-Ultra:
+Install Calc-Ultra using pip.
 
-`pip3 install calc-ultra`
-
-or
-
-`python3 -m pip install calc-ultra` if you have lower versions of pip.
-
-Due to Python import identifiers restrictions, please import Calc-Ultra as "calc_ultra" and not "calc-ultra".
-
-Import Calc-Ultra like so to use:
-
-`from calc_ultra import main`
-
-Please make sure you have the latest version installed. To update calc-ultra, run the following command:
-
-`pip3 install --upgrade calc-ultra`
+e.g. `pip3 install calc_ultra`
 
 ## Requirements
 
