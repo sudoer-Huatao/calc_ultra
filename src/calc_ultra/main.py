@@ -35,6 +35,7 @@ from numpy import (
     cross,
     arange,
     meshgrid,
+    where,
 )
 from numpy.linalg import norm, det
 from sympy import (
@@ -48,14 +49,16 @@ from sympy import (
     im,
     pprint,
     simplify,
-    symbols,
     gamma,
     lowergamma,
     uppergamma,
     zeta,
+    parse_expr,
+    Sum,
 )
+from sympy.abc import x, y, z, a, b, c, k
 from sympy import re as real
-from sympy.core.numbers import pi, E, EulerGamma, I, oo, zoo
+from sympy.core.numbers import pi, E, EulerGamma, I, oo
 import scipy.special as ss
 from scipy.special import polygamma, gammainc, gammaincc, erf, erfc
 from scipy import optimize
@@ -87,8 +90,6 @@ import datetime, re
 filterwarnings("ignore")
 
 parse_and_bind("tab: complete")
-
-x, y, z = symbols("x, y, z")
 
 console = Console()
 
@@ -131,8 +132,8 @@ expr_replace = [
     # is part of an expression or a constant on it's own.
     ("i", "I"),
     ("^", "**"),
-    ("E1**", "exp"),
     ("E1xp", "exp"),
+    ("hE1t", "het"),
     ("E1r", "er"),
     ("E1c", "ec"),
     ("sIn", "sin"),
@@ -210,9 +211,8 @@ def _(event):
 
 @key_bindings.add("c-c")
 def _(event):
-    global history, graphs
+    global history
     history = [""]
-    graphs.clear()
 
 
 #####################
@@ -221,11 +221,9 @@ def _(event):
 
 
 def simp():
+    print('\n\n("q" to quit, Control + C to clear history)\n')
     print(
-        '\n[bold bright_green](Current Screen: Simple Calculation Screen)[/bold bright_green]\n\n("q" to quit, Control + C to clear history)\n'
-    )
-    print(
-        "\nFor sums, write as sum(any function, (dummy var, lower bound, upper bound))\nEnter any expression:\n"
+        "\nFor sigmas, write as sum(any function, (dummy var, lower bound, upper bound))\nEnter any expression:\n"
     )
 
     while True:
@@ -237,7 +235,7 @@ def simp():
         )
         expr = prompt(key_bindings=key_bindings)
 
-        if expr != "q":
+        if expr != "q" and expr != "\n":
             # Easy to exit unlike VIM ;)
             expr = expr.replace(" ", "")
             try:
@@ -262,15 +260,14 @@ def simp():
                                 print(left_result, right_result)
                                 break
 
-                        print(f"\n{equals}\n")
+                    print(f"\n{equals}\n")
 
                 else:
                     result = simplify(
                         replace_expr(expr)
                         .replace("3.141592653589793", "pi")
-                        .replace("2.718281828459045", "E1")
-                    )
-
+                        .replace("2.718281828459045", "E")
+                    ).doit()
                     if result == None:
                         print()
                         error("Could not complete calculation.")
@@ -358,6 +355,8 @@ def derive(function: str, order: str):
             plt.ylabel("y", rotation=0, weight="bold")
             plt.plot(x_arr, f(x_arr), color="red", label="Function")
             plt.plot(x_arr, dif(x_arr), color="blue", label="Derivative")
+            plt.axvline(x=0, color="black")
+            plt.axhline(y=0, color="black")
             plt.axis([-7.5, 7.5, -7.5, 7.5])
             plt.legend(loc="lower left")
             plt.grid()
@@ -547,6 +546,8 @@ def antiderive(function: str):
             plt.ylabel("y", rotation=0, weight="bold")
             plt.plot(x_arr, f(x_arr), color="red", label="Function")
             plt.plot(x_arr, af(x_arr), color="blue", label="Antiderivative")
+            plt.axvline(x=0, color="black")
+            plt.axhline(y=0, color="black")
             plt.axis([-7.5, 7.5, -7.5, 7.5])
             plt.legend(loc="lower left")
             plt.grid()
@@ -672,6 +673,8 @@ def def_int(function: str, low: str, up: str):
             plt.xlabel("x", weight="bold")
             plt.ylabel("y", rotation=0, weight="bold")
             plt.plot(x_arr, f(x_arr), color="red", label="Function")
+            plt.axvline(x=0, color="black")
+            plt.axhline(y=0, color="black")
 
             plt.fill_between(
                 x_arr,
@@ -1046,6 +1049,193 @@ def generate_taylor(function: str, order: int, a: str, point: str):
         print()
 
 
+def graph():
+    r"""Grapher"""
+    while True:
+        console.print(
+            "expr=",
+            style=Style(color="white", dim=True, blink=True),
+            end="",
+            highlight=False,
+        )
+        expr = prompt(key_bindings=key_bindings)
+        if expr == "q":
+            break
+        elif expr == "clear":
+            graphs.clear()
+            console.print(
+                "Cleared graph",
+                style=Style(color="white", blink=True),
+                highlight=False,
+            )
+        elif expr == "g":
+            try:
+                print()
+                with Progress(
+                    SpinnerColumn(finished_text="[bright_green]√[/bright_green]"),
+                    TextColumn("[bright_yellow]Loading graphs...[/bright_yellow]"),
+                    BarColumn(),
+                    TimeElapsedColumn(),
+                    transient=False,
+                ) as progress:
+                    task = progress.add_task("", total=100)
+
+                    while not progress.finished:
+                        progress.update(task, advance=2)
+                        sleep(randint(2, 5) / 1000)
+
+                x_arr = linspace(-100, 100, 999999)
+                title = "Graphed functions"
+                plt.title(title)
+                plt.xlabel("x", weight="bold")
+                plt.ylabel("y", rotation=0, weight="bold")
+                color = 0
+                if len(graphs) != 0:
+                    for func in graphs:
+
+                        def f(x: array):
+                            return eval(func)
+
+                        plt.plot(
+                            x_arr,
+                            f(x_arr),
+                            color=colors[color],
+                            label=replace_graph(func).replace("ss.", ""),
+                        )
+                        plt.axvline(x=0, color="black")
+                        plt.axhline(y=0, color="black")
+                        color = (color + 1) % len(colors)
+
+                if len(implicits) != 0:
+                    for i in range(len(implicits)):
+                        plt.contour(
+                            implicits[i][0],
+                            implicits[i][1],
+                            eval(implicits[i][2]),
+                            [0],
+                        )
+
+                plt.axis([-7.5, 7.5, -7.5, 7.5])
+                plt.legend(loc="lower left")
+                plt.grid()
+
+                download = input("Download graph? (y/n) ")
+
+                if download == "y":
+                    plt.savefig(save_path)
+                    print("\nDownloaded graph.")
+
+                plt.show()
+                print("\nExited graph.\n")
+
+            except:
+                plt.close()
+                warning("Could not graph function.")
+                print("\nExited graph.\n")
+                graphs.clear()
+
+        else:
+            expr = replace_expr(expr)
+            try:
+                if "=" in expr:
+                    parts = expr.split("=")
+                    expr = parts[0] + f"-({parts[1]})"
+                    xrange = arange(-100, 100, 0.02)
+                    yrange = arange(-100, 100, 0.02)
+                    x, y = meshgrid(xrange, yrange)
+                    implicits.append([x, y, expr])
+                    print()
+
+                else:
+                    expr = replace_graph(replace_expr(expr))
+                    if "," in expr:
+                        expr = expr.split(",")
+                        for ele in expr:
+                            graphs.append(ele)
+                    else:
+                        graphs.append(expr)
+                    print()
+            except:
+                error("Invalid expression.")
+                print()
+
+
+def polarplot():
+    r"""
+    Polar Plot
+    """
+
+    color = 0
+
+    while True:
+        console.print(
+            "r=",
+            style=Style(color="white", dim=True, blink=True),
+            end="",
+            highlight=False,
+        )
+        expr = prompt(key_bindings=key_bindings)
+        if expr == "q":
+            break
+        elif expr == "clear":
+            graphs.clear()
+            console.print(
+                "\nCleared graph\n",
+                style=Style(color="white", blink=True),
+                highlight=False,
+            )
+            color = 0
+        elif expr == "g":
+            try:
+                print()
+                with Progress(
+                    SpinnerColumn(finished_text="[bright_green]√[/bright_green]"),
+                    TextColumn("[bright_yellow]Loading graphs...[/bright_yellow]"),
+                    BarColumn(),
+                    TimeElapsedColumn(),
+                    transient=False,
+                ) as progress:
+                    task = progress.add_task("", total=100)
+
+                    while not progress.finished:
+                        progress.update(task, advance=2)
+                        sleep(randint(2, 5) / 1000)
+
+                title = "Graphed functions"
+                plt.title(title)
+
+                plt.legend(loc="lower left")
+
+                download = input("Download graph? (y/n) ")
+
+                if download == "y":
+                    plt.savefig(save_path)
+                    print("\nDownloaded graph.")
+
+                plt.show()
+                print("\nExited graph.\n")
+
+            except:
+                plt.close()
+                warning("Could not graph function.")
+                print("\nExited graph.\n")
+                graphs.clear()
+
+        else:
+            try:
+                theta = arange(0, 100, 0.01)[1:]
+                r = eval(expr)
+                theta = where(r >= 0, theta, theta + 3.141592653589793)
+                r = abs(r)
+                plt.polar(theta, r, color=colors[color], label=expr)
+                color = (color + 1) % len(colors)
+                print()
+
+            except:
+                error("Invalid expression.")
+                print()
+
+
 ################
 # Helper funcs #
 ################
@@ -1138,9 +1328,12 @@ def replace_expr(expr: str) -> str:
     Takes a string and sanatizes input for calculation.
     """
 
+    if "e**" in expr:
+        warning("Warning: Use exp(x) for the exponential function, NOT e**x")
+        return
+
     expr = expr.replace(" ", "")
     expr = expr.lower()
-    expr = re.sub(r"(\d)([a-zA-Z\(])", r"\1*\2", expr)
 
     for r in expr_replace:
         expr = expr.replace(*r)
@@ -1169,7 +1362,7 @@ def replace_graph(function: str) -> str:
 
 
 def extend_log(function: str) -> str:
-    r"""Extend domain of natural log.
+    r"""Extend the domain of the natural log for integration purposes.
 
     Explanation
     ===========
@@ -1321,7 +1514,7 @@ def acoth(x):
 
 def nprint(text: str):
     print(text)
-    sleep(0.04)
+    sleep(0.02)
 
 
 def continue_press():
@@ -1377,7 +1570,6 @@ def main():
         now = (datetime.datetime.now()).strftime("%Y/%m/%d %H:%M:%S")
 
         print(f"\n(Time now is: {now})\n")
-        print("[bold bright_green](Current Screen: Main Screen)[/bold bright_green]\n")
         print("[purple]Enter Command: [/purple]", end="")
         cmd = input()
 
@@ -1424,16 +1616,10 @@ def derivacalc():
                 nprint(line)
 
         try:
-            print(
-                "[bold bright_green](Current Screen: Derivative Calculator Main Screen)[/bold bright_green]\n"
-            )
             print("[purple]Enter Command: [/purple]", end="")
             cmd = input()
 
             if cmd == "1":
-                print(
-                    "\n[bold bright_green](Current Screen: Derivative Screen)[/bold bright_green]\n"
-                )
                 function = prompt("Enter a function: ", key_bindings=key_bindings)
                 order = prompt(
                     "Enter order of derivative calculation: ", key_bindings=key_bindings
@@ -1444,9 +1630,6 @@ def derivacalc():
                 continue_press()
 
             elif cmd == "2":
-                print(
-                    "\n[bold bright_green](Current Screen: Partial Derivative Screen)[/bold bright_green]\n"
-                )
                 function = prompt(
                     "Enter a function containing x and y or x and y and z: ",
                     key_bindings=key_bindings,
@@ -1471,9 +1654,6 @@ def derivacalc():
                     continue_press()
 
             elif cmd == "3":
-                print(
-                    "\n[bold bright_green](Current Screen: Implicit Derivative Screen)[/bold bright_green]\n"
-                )
                 circ = prompt(
                     "Enter an equation containing x and y:", key_bindings=key_bindings
                 )
@@ -1487,9 +1667,6 @@ def derivacalc():
                 continue_press()
 
             elif cmd == "4":
-                print(
-                    "\n[bold bright_green](Current Screen: Extrema Calculation Screen)[/bold bright_green]\n"
-                )
                 print('(Press "q" to quit). Enter a function: ', end="")
 
                 while True:
@@ -1543,16 +1720,10 @@ def intecalc():
                 nprint(line)
 
         try:
-            print(
-                "[bold bright_green](Current Screen: Integral Calculator Main Screen)[/bold bright_green]\n"
-            )
             print("[purple]Enter Command: [/purple]", end="")
             cmd = input()
 
             if cmd == "1":
-                print(
-                    "\n[bold bright_green](Current Screen: Antiderivative Screen)[/bold bright_green]\n"
-                )
                 function = prompt("Enter a function: ", key_bindings=key_bindings)
 
                 antiderive(function)
@@ -1560,9 +1731,6 @@ def intecalc():
                 continue_press()
 
             elif cmd == "2":
-                print(
-                    "\n[bold bright_green](Current Screen: Definite Integral Screen)[/bold bright_green]\n"
-                )
                 function = prompt("Enter a function: ", key_bindings=key_bindings)
                 lower_bound = prompt(
                     "\nEnter the lower bound: ", key_bindings=key_bindings
@@ -1576,9 +1744,6 @@ def intecalc():
                 continue_press()
 
             elif cmd == "3":
-                print(
-                    "\n[bold bright_green](Current Screen: Improper Integral Screen)[/bold bright_green]\n"
-                )
                 function = prompt("Enter a function: ", key_bindings=key_bindings)
                 lower_bound = prompt(
                     "\nEnter the lower bound: ", key_bindings=key_bindings
@@ -1592,9 +1757,6 @@ def intecalc():
                 continue_press()
 
             elif cmd == "4":
-                print(
-                    "\n[bold bright_green](Current Screen: Double Integral Screen)[/bold bright_green]\n"
-                )
                 function = prompt("Enter a function: ", key_bindings=key_bindings)
                 outer_low = prompt(
                     "\nEnter the lower outer bound: ", key_bindings=key_bindings
@@ -1648,32 +1810,27 @@ def limcalc():
         print()
 
         try:
-            print(
-                "\n[bold bright_green](Current Screen: Limit Calculator Main Screen)[/bold bright_green]\n"
-            )
             print("[purple]Enter Command: [/purple]", end="")
             cmd = input()
 
             if cmd == "1":
-                print(
-                    "\n[bold bright_green](Current screen: Limit Screen)[/bold bright_green]\n"
-                )
                 expr = prompt("Enter an expression: ", key_bindings=key_bindings)
                 value = prompt("Enter point of evaluation: ", key_bindings=key_bindings)
 
                 lim(expr, value)
 
+                print()
+
                 continue_press()
 
             elif cmd == "2":
-                print(
-                    "\n[bold bright_green](Current screen: One-sided Limit Screen)[/bold bright_green]\n"
-                )
                 expr = prompt("Enter an expression: ", key_bindings=key_bindings)
                 value = prompt("Enter point of evaluation: ", key_bindings=key_bindings)
                 direction = input("Enter direction of limit ('left' or 'right'): ")
 
                 side_lim(expr, value, direction)
+
+                print()
 
                 continue_press()
 
@@ -1709,16 +1866,10 @@ def utils():
 
         print()
         try:
-            print(
-                "\n[bold bright_green](Current Screen: Other Utilities Main Screen)[/bold bright_green]\n"
-            )
             print("[purple]Enter Command: [/purple]", end="")
             cmd = input()
 
             if cmd == "1":
-                print(
-                    "\n[bold bright_green](Current screen: Equation Solver Screen)[/bold bright_green]\n"
-                )
                 mode = ""
 
                 while mode != "q":
@@ -1737,10 +1888,6 @@ def utils():
                         print()
 
             elif cmd == "2":
-                print(
-                    "\n[bold bright_green](Current screen: Vector Calculation Screen)[/bold bright_green]\n"
-                )
-
                 print("Write a vector like [1, 2, 3], then perform operations!")
                 print(
                     "\n- Use [bright_magenta]@[/bright_magenta] to calculate the dot product"
@@ -1785,10 +1932,6 @@ def utils():
                 print()
 
             elif cmd == "3":
-                print(
-                    "\n[bold bright_green](Current screen: Matrix Calculation Screen)[/bold bright_green]\n"
-                )
-
                 print("Write a matrix like [[1, 2], [3, 4]], then perform operations!")
                 print(
                     "- Use [bright_magenta]@[/bright_magenta] to calculate the dot product"
@@ -1831,9 +1974,6 @@ def utils():
                         error(f'Could not parse: "{expr}"\n')
 
             elif cmd == "4":
-                print(
-                    "\n[bold bright_green](Current screen: Taylor Polynomial Approximation Screen)[/bold bright_green]\n"
-                )
                 function = prompt("Enter a function: ", key_bindings=key_bindings)
                 order = int(
                     prompt(
@@ -1853,9 +1993,6 @@ def utils():
                 continue_press()
 
             elif cmd == "5":
-                print(
-                    "\n[bold bright_green](Current screen: Expression Simplifier Screen)[/bold bright_green]\n"
-                )
                 print('(Press "q" to quit)\nEnter any expression:\n')
 
                 while True:
@@ -1870,6 +2007,7 @@ def utils():
                         break
                     else:
                         try:
+                            print(replace_expr(expr))
                             result = simplify(replace_expr(expr))
                             print(f"\nSimplified {expr}:\n")
                             print_expr(result)
@@ -1880,125 +2018,25 @@ def utils():
                         except:
                             error("Invalid expression.")
                             print()
+
             elif cmd == "6":
                 print(
-                    "\n[bold bright_green](Current screen: Grapher Screen)[/bold bright_green]\n"
-                )
-                print(
-                    '\nEnter any expression (to graph, enter "g". Exit the graph when you are done. Enter "q" to quit, Control+C to clear entered functions.):\n'
+                    '\nEnter any expression ("g" to graph, exit the graph when you are done. "q" to quit, "clear" to clear entered functions.):\n'
                 )
                 print(
                     "You can also enter multiple functions at once, separated by commas.\n"
                 )
 
-                while True:
-                    console.print(
-                        "expr=",
-                        style=Style(color="white", dim=True, blink=True),
-                        end="",
-                        highlight=False,
-                    )
-                    expr = prompt(key_bindings=key_bindings)
-                    if expr == "q":
-                        break
-                    elif expr == "g":
-                        try:
-                            print()
-                            with Progress(
-                                SpinnerColumn(
-                                    finished_text="[bright_green]√[/bright_green]"
-                                ),
-                                TextColumn(
-                                    "[bright_yellow]Loading graphs...[/bright_yellow]"
-                                ),
-                                BarColumn(),
-                                TimeElapsedColumn(),
-                                transient=False,
-                            ) as progress:
-                                task = progress.add_task("", total=100)
-
-                                while not progress.finished:
-                                    progress.update(task, advance=2)
-                                    sleep(randint(2, 5) / 1000)
-
-                            x_arr = linspace(-100, 100, 200000)
-                            title = "Graphed functions"
-                            plt.title(title)
-                            plt.xlabel("x", weight="bold")
-                            plt.ylabel("y", rotation=0, weight="bold")
-                            color = 0
-                            if len(graphs) != 0:
-                                for func in graphs:
-
-                                    def f(x: array):
-                                        return eval(func)
-
-                                    plt.plot(
-                                        x_arr,
-                                        f(x_arr),
-                                        color=colors[color],
-                                        label=replace_graph(func),
-                                    )
-                                    color = (color + 1) % len(colors)
-
-                            if len(implicits) != 0:
-                                for i in range(len(implicits)):
-                                    plt.contour(
-                                        implicits[i][0],
-                                        implicits[i][1],
-                                        eval(implicits[i][2]),
-                                        [0],
-                                    )
-
-                            plt.axis([-7.5, 7.5, -7.5, 7.5])
-                            plt.legend(loc="lower left")
-                            plt.grid()
-
-                            download = input("Download graph? (y/n) ")
-
-                            if download == "y":
-                                plt.savefig(save_path)
-                                print("\nDownloaded graph.")
-
-                            plt.show()
-                            print("\nExited graph.\n")
-
-                        except:
-                            plt.close()
-                            warning("Could not graph function.")
-                            print("\nExited graph.\n")
-                            graphs.clear()
-
-                    else:
-                        expr = replace_expr(expr)
-                        try:
-                            if "=" in expr:
-                                parts = expr.split("=")
-                                expr = parts[0] + f"-({parts[1]})"
-                                xrange = arange(-100, 100, 0.03)
-                                yrange = arange(-100, 100, 0.03)
-                                x, y = meshgrid(xrange, yrange)
-                                implicits.append([x, y, expr])
-                                print()
-
-                            else:
-                                expr = replace_graph(replace_expr(expr))
-                                if "," in expr:
-                                    expr = expr.split(",")
-                                    print(expr)
-                                    for ele in expr:
-                                        graphs.append(ele)
-                                else:
-                                    graphs.append(expr)
-                                print()
-                        except:
-                            error("Invalid expression.")
-                            print()
+                graph()
 
             elif cmd == "7":
                 print(
-                    "\n[bold bright_green](Current Screen: Arc Length Calculator Screen)[/bold bright_green]\n"
+                    '\nEnter any expression containing r ("g" to graph, exit graph when you are done. "q" to quit, "clear" to clear entered functions.):\n'
                 )
+
+                polarplot()
+
+            elif cmd == "8":
                 expr = replace_expr(
                     prompt("Enter a function: ", key_bindings=key_bindings)
                 )
@@ -2019,7 +2057,7 @@ def utils():
                 ).evalf()
                 print(f"\nArc Length: {arc_len}\n")
 
-            elif cmd == "8":
+            elif cmd == "9":
                 print("\n[bright_yellow]Exiting Algebra Calculator ...[/bright_yellow]")
                 break
 
@@ -2049,15 +2087,10 @@ def settings():
             else:
                 nprint(line)
 
-        print("\n[bold green](Current Screen: Settings Screen)[/bold green]\n")
         print("[purple]Enter Command: [/purple]", end="")
         cmd = input()
 
         if cmd == "print":
-            print(
-                "\n[bold bright_green](Current Screen: Print Settings Screen)[/bold bright_green]\n"
-            )
-
             global print_option
 
             print_option = input(
@@ -2066,10 +2099,6 @@ def settings():
             print(f'\nPrinting mode set to: "{print_option}"')
 
         elif cmd == "graph":
-            print(
-                "\n[bold bright_green](Current Screen: Graph Settings Screen)[/bold bright_green]\n"
-            )
-
             global graph_option
 
             graph_option = input(
@@ -2078,10 +2107,6 @@ def settings():
             print(f'\nGraph mode set to: "{graph_option}"')
 
         elif cmd == "style":
-            print(
-                "\n[bold bright_green](Current Screen: Graph Style Settings Screen)[/bold bright_green]\n"
-            )
-
             print("You currently have these available styles:\n")
 
             style_list = plt.style.available
@@ -2095,10 +2120,6 @@ def settings():
             print(f'Graph style set to "{style}".')
 
         elif cmd == "path":
-            print(
-                "\n[bold bright_green](Current Screen: Graph Save Path Screen)[/bold bright_green]\n"
-            )
-
             global save_path
 
             print(f"The current path where graphs will be saved to is: {save_path}.\n")
@@ -2126,6 +2147,6 @@ def settings():
             continue_press()
 
 
-if __name__ != "__main__":
-    main()
+# if __name__ != "__main__":
+main()
 # You've reached the end of the file!
