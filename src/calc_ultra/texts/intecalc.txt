@@ -1,0 +1,15 @@
+
+Integral Calculator
+ 
+--> 1: Antiderivatives
+
+--> 2: Definite integrals
+
+--> 3: Improper integrals
+
+--> 4: Double integrals
+
+--> 5: Exit
+
+(Absolute value function and factorial function is only supported by definite integral computation)
+

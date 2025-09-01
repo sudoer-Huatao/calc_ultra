@@ -1,0 +1,20 @@
+
+Other Utils
+
+--> 1: Solve equation
+
+--> 2: Vector calc
+
+--> 3: Matrix calc
+
+--> 4: Taylor Approx.
+
+--> 5: Simplify Exprs
+
+--> 6: Grapher
+
+--> 7: Polar Plotter
+
+--> 8: Arc Length calc
+
+--> 9: Exit

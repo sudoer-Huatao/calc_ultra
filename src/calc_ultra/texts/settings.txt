@@ -1,0 +1,15 @@
+
+
+   ---------------------
+  | Calc-Ultra Settings |
+   ---------------------
+
+--> "print": set printing mode.
+
+--> "graph": set graph display.
+
+--> "style": set graph style.
+
+--> "path" : set path for graphs.
+
+--> "exit" : exit settings.
